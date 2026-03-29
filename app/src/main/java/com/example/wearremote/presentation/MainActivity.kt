@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        //TilePreviewGenerator.generate(this)
         val tileTargetPage = intent.getIntExtra("open_page", -1)
         val autoCommand = intent.getStringExtra("auto_cmd")    // ← NEW
         setContent {

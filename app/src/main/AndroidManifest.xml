@@ -50,48 +50,63 @@
         <!-- ── Tiles (плитки) ── -->
 
         <service android:name=".presentation.tiles.MediaTile"
-            android:label="WR: Медиа"
+            android:label="Медиа"
             android:exported="true"
             android:permission="com.google.android.wearable.permission.BIND_TILE_PROVIDER">
             <intent-filter>
                 <action android:name="androidx.wear.tiles.action.BIND_TILE_PROVIDER" />
             </intent-filter>
+            <meta-data
+                android:name="androidx.wear.tiles.PREVIEW"
+                android:resource="@drawable/tile_preview_media" />
         </service>
 
         <service android:name=".presentation.tiles.SoundTile"
-            android:label="WR: Звук"
+            android:label="Звук"
             android:exported="true"
             android:permission="com.google.android.wearable.permission.BIND_TILE_PROVIDER">
             <intent-filter>
                 <action android:name="androidx.wear.tiles.action.BIND_TILE_PROVIDER" />
             </intent-filter>
+            <meta-data
+                android:name="androidx.wear.tiles.PREVIEW"
+                android:resource="@drawable/tile_preview_sound" />
         </service>
 
         <service android:name=".presentation.tiles.MicTile"
-            android:label="WR: Микрофон"
+            android:label="Микрофон"
             android:exported="true"
             android:permission="com.google.android.wearable.permission.BIND_TILE_PROVIDER">
             <intent-filter>
                 <action android:name="androidx.wear.tiles.action.BIND_TILE_PROVIDER" />
             </intent-filter>
+            <meta-data
+                android:name="androidx.wear.tiles.PREVIEW"
+                android:resource="@drawable/tile_preview_mic" />
         </service>
 
         <service android:name=".presentation.tiles.ComputerTile"
-            android:label="WR: Компьютер"
+            android:label="Компьютер"
             android:exported="true"
             android:permission="com.google.android.wearable.permission.BIND_TILE_PROVIDER">
             <intent-filter>
                 <action android:name="androidx.wear.tiles.action.BIND_TILE_PROVIDER" />
             </intent-filter>
+            <meta-data
+                android:name="androidx.wear.tiles.PREVIEW"
+                android:resource="@drawable/tile_preview_computer" />
         </service>
 
         <service android:name=".presentation.tiles.ScreenTile"
-            android:label="WR: Экран"
+            android:label="Экран"
             android:exported="true"
             android:permission="com.google.android.wearable.permission.BIND_TILE_PROVIDER">
             <intent-filter>
                 <action android:name="androidx.wear.tiles.action.BIND_TILE_PROVIDER" />
             </intent-filter>
+            <meta-data
+                android:name="androidx.wear.tiles.PREVIEW"
+                android:resource="@drawable/tile_preview_screen" />
         </service>
     </application>
 
