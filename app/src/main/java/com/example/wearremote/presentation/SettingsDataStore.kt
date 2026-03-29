@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
@@ -15,6 +16,7 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 class SettingsDataStore(private val context: Context) {
 
     companion object {
+        private val LAST_PAGE_KEY = intPreferencesKey("last_page")
         private val IP_ADDRESS_KEY = stringPreferencesKey("ip_address")
         private val PORT_KEY = stringPreferencesKey("port")
         private val AUTH_CODE_KEY = stringPreferencesKey("auth_code")
@@ -31,6 +33,12 @@ class SettingsDataStore(private val context: Context) {
 
     val authCode: Flow<String> = context.dataStore.data.map { prefs ->
         prefs[AUTH_CODE_KEY] ?: ""
+    }
+
+    val lastPage: Flow<Int> = context.dataStore.data.map { it[LAST_PAGE_KEY] ?: 0 }
+
+    suspend fun saveLastPage(page: Int) {
+        context.dataStore.edit { it[LAST_PAGE_KEY] = page }
     }
 
     // Функция сохранения всех настроек

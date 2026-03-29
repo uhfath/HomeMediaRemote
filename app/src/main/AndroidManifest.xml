@@ -46,6 +46,53 @@
             android:name=".presentation.InputActivity"
             android:exported="false"
             android:windowSoftInputMode="stateAlwaysVisible|adjustPan" />
+
+        <!-- ── Tiles (плитки) ── -->
+
+        <service android:name=".presentation.tiles.MediaTile"
+            android:label="WR: Медиа"
+            android:exported="true"
+            android:permission="com.google.android.wearable.permission.BIND_TILE_PROVIDER">
+            <intent-filter>
+                <action android:name="androidx.wear.tiles.action.BIND_TILE_PROVIDER" />
+            </intent-filter>
+        </service>
+
+        <service android:name=".presentation.tiles.SoundTile"
+            android:label="WR: Звук"
+            android:exported="true"
+            android:permission="com.google.android.wearable.permission.BIND_TILE_PROVIDER">
+            <intent-filter>
+                <action android:name="androidx.wear.tiles.action.BIND_TILE_PROVIDER" />
+            </intent-filter>
+        </service>
+
+        <service android:name=".presentation.tiles.MicTile"
+            android:label="WR: Микрофон"
+            android:exported="true"
+            android:permission="com.google.android.wearable.permission.BIND_TILE_PROVIDER">
+            <intent-filter>
+                <action android:name="androidx.wear.tiles.action.BIND_TILE_PROVIDER" />
+            </intent-filter>
+        </service>
+
+        <service android:name=".presentation.tiles.ComputerTile"
+            android:label="WR: Компьютер"
+            android:exported="true"
+            android:permission="com.google.android.wearable.permission.BIND_TILE_PROVIDER">
+            <intent-filter>
+                <action android:name="androidx.wear.tiles.action.BIND_TILE_PROVIDER" />
+            </intent-filter>
+        </service>
+
+        <service android:name=".presentation.tiles.ScreenTile"
+            android:label="WR: Экран"
+            android:exported="true"
+            android:permission="com.google.android.wearable.permission.BIND_TILE_PROVIDER">
+            <intent-filter>
+                <action android:name="androidx.wear.tiles.action.BIND_TILE_PROVIDER" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>
