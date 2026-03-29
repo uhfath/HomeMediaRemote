@@ -58,7 +58,7 @@ fun SettingsScreen(
         if (result.resultCode == Activity.RESULT_OK) {
             val value = result.data?.getStringExtra(InputActivity.EXTRA_RESULT) ?: ""
             when (editingField) {
-                "host"   -> hostInput = value
+                "host" -> hostInput = value
                 "port" -> portInput = value
                 "auth" -> authInput = value
             }

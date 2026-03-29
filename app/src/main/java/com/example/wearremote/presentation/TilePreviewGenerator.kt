@@ -19,17 +19,17 @@ object TilePreviewGenerator {
     )
 
     private val TILES = listOf(
-        Info("media",    "🎵", "Медиа",     listOf(listOf("⏮","▶"), listOf("⏸","⏭"))),
-        Info("sound",    "🔊", "Звук",      listOf(listOf("🔇","🔊"), listOf("−","+"))),
-        Info("mic",      "🎤", "Микрофон",  listOf(listOf("🔇","🎤"), listOf("−","+"))),
-        Info("computer", "💻", "Компьютер", listOf(listOf("🔒","💤"), listOf("🔄","⏻"))),
+        Info("media",    "🎵", "Медиа",     listOf(listOf("⏮️","▶️"), listOf("⏸️","⏭️"))),
+        Info("sound",    "🔊", "Звук",      listOf(listOf("🔇","🔊"), listOf("➖","➕"))),
+        Info("mic",      "🎤", "Микрофон",  listOf(listOf("🔇","🎤"), listOf("➖","➕"))),
+        Info("computer", "💻", "Компьютер", listOf(listOf("🔒","💤"), listOf("🔄","🔌"))),
         Info("screen",   "🖥", "Экран",     listOf(listOf("💡","🌙")))
     )
 
     fun generate(context: Context) {
         val dir = File(context.filesDir, "tile_previews")
-        if (dir.exists() && (dir.listFiles()?.size ?: 0) >= TILES.size) return
-        dir.mkdirs()
+        if (!dir.exists())
+            dir.mkdirs()
 
         TILES.forEach { tile ->
             val bmp = render(tile)

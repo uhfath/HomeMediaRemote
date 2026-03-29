@@ -181,12 +181,12 @@ private fun RemotePagerContent(
 private fun MediaPage(cmd: (String, String) -> Unit, onSettings: () -> Unit) {
     PageShell(title = "🎵 Медиа", onSettings = onSettings) {
         BtnRow {
-            CmdChip("⏮ Пред") { cmd("media/prev",  MediaPrevBody().toJson()) }
-            CmdChip("⏭ След") { cmd("media/next",  MediaNextBody().toJson()) }
+            CmdChip("⏮️ Пред") { cmd("media/prev",  MediaPrevBody().toJson()) }
+            CmdChip("⏭️ След") { cmd("media/next",  MediaNextBody().toJson()) }
         }
         BtnRow {
-            CmdChip("▶ Play")   { cmd("media/play",  MediaPlayBody().toJson()) }
-            CmdChip("⏸ Пауза") { cmd("media/pause", MediaPauseBody().toJson()) }
+            CmdChip("▶️ Play")   { cmd("media/play",  MediaPlayBody().toJson()) }
+            CmdChip("⏸️ Пауза") { cmd("media/pause", MediaPauseBody().toJson()) }
         }
     }
 }
@@ -243,8 +243,8 @@ private fun ComputerPage(cmd: (String, String) -> Unit, onSettings: () -> Unit) 
             CmdChip("💤 Сон")  { cmd("pc/sleep",    PcSleepBody().toJson()) }
         }
         BtnRow {
-            CmdChip("🔄 Рест")  { cmd("pc/restart",  PcRestartBody().toJson()) }
-            CmdChip("🔌 Выкл") { cmd("pc/shutdown", PcShutdownBody().toJson()) }
+            CmdChip("🔄 Рестарт")    { cmd("pc/restart",  PcRestartBody().toJson()) }
+            CmdChip("🔌 Выкл")       { cmd("pc/shutdown", PcShutdownBody().toJson()) }
         }
     }
 }
