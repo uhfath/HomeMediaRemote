@@ -4903,3 +4903,358 @@ override fun onCreate(savedInstanceState: Bundle?) {
 ---
 
 > 💡 Если вы позже добавите новые экраны/плитки, повторите шаги 3–6: удалите папку `tile_previews` на устройстве (или удалите строку `if (dir.exists()...)` в генераторе), перезапустите приложение, скопируйте новые PNG.
+
+внеси ещё несколько изменений в то, как отправляются запросы:
+1. запрос должен быть POST
+2. команда должна отправляться в теле запроса как JSON с расширяемой структурой. идеально передавать класс, который будет сериализован и который я смогу расширять. у каждой кнопки свой класс со своими полями.
+3. auth должен передаваться в заголовке X-API-AUTH
+4. сама команда должна быть частью route, а не параметром query string. она должна так же передаваться как параметр в метод отправки, что бы я мог задавать имя команды отдельно от её класса.
+
+## 1. Добавьте плагин сериализации
+
+Откройте `gradle/libs.versions.toml` и найдите версию Kotlin, например:
+```toml
+[versions]
+kotlin = "2.0.21"
+```
+
+Запомните номер. Откройте **`app/build.gradle.kts`**, в блок `plugins` добавьте:
+
+```kotlin
+plugins {
+    // ... существующие плагины ...
+    kotlin("plugin.serialization") version "2.0.21"   // ← ваша версия Kotlin
+}
+```
+
+В `dependencies` добавьте:
+
+```kotlin
+implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+```
+
+**Sync Now**.
+
+---
+
+## 2. Замените CommandSender.kt целиком
+
+```kotlin
+package com.example.wearremote.presentation
+
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import java.util.concurrent.TimeUnit
+
+object CommandSender {
+
+    /** Общий экземпляр Json — используйте для ручной сериализации */
+    val json = Json { encodeDefaults = true; ignoreUnknownKeys = true }
+
+    private val http = OkHttpClient.Builder()
+        .connectTimeout(5, TimeUnit.SECONDS)
+        .readTimeout(5, TimeUnit.SECONDS)
+        .build()
+
+    private val JSON_TYPE = "application/json; charset=utf-8".toMediaType()
+
+    /**
+     *  POST http://{ip}:{port}/api/{command}
+     *  Header:  X-API-AUTH: {auth}
+     *  Body:    {jsonBody}
+     */
+    suspend fun send(
+        ip: String,
+        port: String,
+        auth: String,
+        command: String,
+        jsonBody: String = "{}"
+    ): String = withContext(Dispatchers.IO) {
+        try {
+            val url = "http://$ip:$port/api/$command"
+            val body = jsonBody.toRequestBody(JSON_TYPE)
+            val request = Request.Builder()
+                .url(url)
+                .post(body)
+                .addHeader("X-API-AUTH", auth)
+                .build()
+            val resp = http.newCall(request).execute()
+            if (resp.isSuccessful) "OK" else "Ошибка: ${resp.code}"
+        } catch (e: java.net.ConnectException) { "Нет соединения"
+        } catch (e: java.net.SocketTimeoutException) { "Таймаут"
+        } catch (e: Exception) { "Ошибка: ${e.message?.take(50)}" }
+    }
+
+    /** Типизированная отправка — сериализует body автоматически */
+    suspend inline fun <reified T> sendBody(
+        ip: String, port: String, auth: String,
+        command: String, body: T
+    ): String = send(ip, port, auth, command, json.encodeToString(body))
+}
+
+/** Удобная сериализация: `MyBody(...).toJson()` */
+inline fun <reified T> T.toJson(): String = CommandSender.json.encodeToString(this)
+```
+
+---
+
+## 3. Создайте файл CommandBodies.kt
+
+Каждая кнопка получает свой класс. Сейчас они пустые — вы сможете добавлять поля когда понадобится.
+
+```kotlin
+package com.example.wearremote.presentation
+
+import kotlinx.serialization.Serializable
+
+// ── Медиа ──
+@Serializable class MediaPlayBody(val position: Long = 0)
+@Serializable class MediaPauseBody
+@Serializable class MediaNextBody
+@Serializable class MediaPrevBody
+
+// ── Звук ──
+@Serializable class SoundMuteBody
+@Serializable class SoundUnmuteBody
+@Serializable class VolumeUpBody(val step: Int = 1)
+@Serializable class VolumeDownBody(val step: Int = 1)
+
+// ── Микрофон ──
+@Serializable class MicOnBody
+@Serializable class MicOffBody
+@Serializable class MicSensUpBody(val step: Int = 1)
+@Serializable class MicSensDownBody(val step: Int = 1)
+
+// ── Компьютер ──
+@Serializable class PcLockBody
+@Serializable class PcSleepBody
+@Serializable class PcRestartBody(val force: Boolean = false)
+@Serializable class PcShutdownBody(val force: Boolean = false)
+
+// ── Экран ──
+@Serializable class ScreenOnBody
+@Serializable class ScreenOffBody
+```
+
+---
+
+## 4. Обновите RemotePages.kt
+
+### 4а. Замените функцию `cmd` в `RemotePagerContent`:
+
+**Было:**
+```kotlin
+fun cmd(command: String) {
+    scope.launch {
+        val r = CommandSender.send(ip, port, auth, command)
+```
+
+**Стало:**
+```kotlin
+fun cmd(command: String, jsonBody: String = "{}") {
+    scope.launch {
+        val r = CommandSender.send(ip, port, auth, command, jsonBody)
+```
+
+### 4б. Замените передачу `::cmd` в `when` блоке:
+
+**Было:**
+```kotlin
+when (page) {
+    0 -> MediaPage(::cmd, onOpenSettings)
+    1 -> SoundPage(isCurrent, ::cmd, onOpenSettings)
+```
+
+**Стало (используем лямбду):**
+```kotlin
+val onCmd: (String, String) -> Unit = { c, b -> cmd(c, b) }
+when (page) {
+    0 -> MediaPage(onCmd, onOpenSettings)
+    1 -> SoundPage(isCurrent, onCmd, onOpenSettings)
+    2 -> MicPage(isCurrent, onCmd, onOpenSettings)
+    3 -> ComputerPage(onCmd, onOpenSettings)
+    4 -> ScreenPage(onCmd, onOpenSettings)
+}
+```
+
+### 4в. Обновите сигнатуры и тела всех страниц:
+
+Замените все 5 страниц. Тип `cmd` меняется с `(String) -> Unit` на `(String, String) -> Unit`. Внутри каждой страницы добавляется обёртка `val c: (String) -> Unit`:
+
+```kotlin
+// ═══════════════════════════════════════════════════════
+//  Страница 0 — Медиа
+// ═══════════════════════════════════════════════════════
+
+@Composable
+private fun MediaPage(cmd: (String, String) -> Unit, onSettings: () -> Unit) {
+    PageShell(title = "🎵 Медиа", onSettings = onSettings) {
+        BtnRow {
+            CmdChip("⏮ Пред") { cmd("media/prev",  MediaPrevBody().toJson()) }
+            CmdChip("⏭ След") { cmd("media/next",  MediaNextBody().toJson()) }
+        }
+        BtnRow {
+            CmdChip("▶ Play")   { cmd("media/play",  MediaPlayBody().toJson()) }
+            CmdChip("⏸ Пауза") { cmd("media/pause", MediaPauseBody().toJson()) }
+        }
+    }
+}
+
+// ═══════════════════════════════════════════════════════
+//  Страница 1 — Звук
+// ═══════════════════════════════════════════════════════
+
+@Composable
+private fun SoundPage(isCurrent: Boolean, cmd: (String, String) -> Unit, onSettings: () -> Unit) {
+    RotaryPageShell(
+        title = "🔊 Звук", hint = "⟳ Безель: громкость",
+        isCurrent = isCurrent,
+        onRotaryUp   = { cmd("sound/vol_up",   VolumeUpBody().toJson()) },
+        onRotaryDown = { cmd("sound/vol_down", VolumeDownBody().toJson()) },
+        onSettings = onSettings
+    ) {
+        BtnRow {
+            CmdChip("🔇 Выкл") { cmd("sound/mute",   SoundMuteBody().toJson()) }
+            CmdChip("🔊 Вкл")  { cmd("sound/unmute", SoundUnmuteBody().toJson()) }
+        }
+    }
+}
+
+// ═══════════════════════════════════════════════════════
+//  Страница 2 — Микрофон
+// ═══════════════════════════════════════════════════════
+
+@Composable
+private fun MicPage(isCurrent: Boolean, cmd: (String, String) -> Unit, onSettings: () -> Unit) {
+    RotaryPageShell(
+        title = "🎤 Микрофон", hint = "⟳ Безель: чувствительность",
+        isCurrent = isCurrent,
+        onRotaryUp   = { cmd("mic/sens_up",   MicSensUpBody().toJson()) },
+        onRotaryDown = { cmd("mic/sens_down", MicSensDownBody().toJson()) },
+        onSettings = onSettings
+    ) {
+        BtnRow {
+            CmdChip("🔇 Выкл") { cmd("mic/off", MicOffBody().toJson()) }
+            CmdChip("🎤 Вкл")  { cmd("mic/on",  MicOnBody().toJson()) }
+        }
+    }
+}
+
+// ═══════════════════════════════════════════════════════
+//  Страница 3 — Компьютер
+// ═══════════════════════════════════════════════════════
+
+@Composable
+private fun ComputerPage(cmd: (String, String) -> Unit, onSettings: () -> Unit) {
+    PageShell(title = "💻 Компьютер", onSettings = onSettings) {
+        BtnRow {
+            CmdChip("🔒 Блок") { cmd("pc/lock",     PcLockBody().toJson()) }
+            CmdChip("💤 Сон")  { cmd("pc/sleep",    PcSleepBody().toJson()) }
+        }
+        BtnRow {
+            CmdChip("🔄 Рест")  { cmd("pc/restart",  PcRestartBody().toJson()) }
+            CmdChip("⏻ Выкл") { cmd("pc/shutdown", PcShutdownBody().toJson()) }
+        }
+    }
+}
+
+// ═══════════════════════════════════════════════════════
+//  Страница 4 — Экран
+// ═══════════════════════════════════════════════════════
+
+@Composable
+private fun ScreenPage(cmd: (String, String) -> Unit, onSettings: () -> Unit) {
+    PageShell(title = "🖥 Экран", onSettings = onSettings) {
+        BtnRow {
+            CmdChip("💡 Вкл")  { cmd("screen/on",  ScreenOnBody().toJson()) }
+            CmdChip("🌙 Выкл") { cmd("screen/off", ScreenOffBody().toJson()) }
+        }
+    }
+}
+```
+
+---
+
+## Формат запросов — до и после
+
+| | Было | Стало |
+|---|---|---|
+| **Метод** | GET | **POST** |
+| **URL** | `/api?cmd=play&auth=1234` | `/api/media/play` |
+| **Auth** | query string | **Header `X-API-AUTH`** |
+| **Body** | нет | **JSON** `{"position":0}` |
+
+Пример запроса:
+```
+POST http://192.168.1.100:8080/api/pc/restart
+X-API-AUTH: 1234
+Content-Type: application/json
+
+{"force":false}
+```
+
+---
+
+## Обновлённый тестовый сервер
+
+Замените `test_server.py`:
+
+```python
+from http.server import BaseHTTPRequestHandler, HTTPServer
+import json, datetime
+
+class Handler(BaseHTTPRequestHandler):
+    def do_POST(self):
+        # Route
+        path = self.path  # e.g. /api/media/play
+
+        # Auth header
+        auth = self.headers.get("X-API-AUTH", "—")
+
+        # JSON body
+        length = int(self.headers.get("Content-Length", 0))
+        body = json.loads(self.rfile.read(length)) if length else {}
+
+        ts = datetime.datetime.now().strftime("%H:%M:%S")
+        print(f"[{ts}]  POST {path}  auth={auth}  body={json.dumps(body)}")
+
+        self.send_response(200)
+        self.send_header("Content-Type", "text/plain")
+        self.end_headers()
+        self.wfile.write(b"OK")
+
+server = HTTPServer(("0.0.0.0", 8080), Handler)
+print("Тестовый сервер: http://0.0.0.0:8080")
+server.serve_forever()
+```
+
+---
+
+## Как расширять тело команды
+
+Когда понадобится передавать доп. данные, просто добавьте поля в класс:
+
+```kotlin
+// Было:
+@Serializable class PcShutdownBody(val force: Boolean = false)
+
+// Стало:
+@Serializable class PcShutdownBody(
+    val force: Boolean = false,
+    val delaySeconds: Int = 0,      // ← новое поле
+    val reason: String = "user"     // ← новое поле
+)
+```
+
+Запрос автоматически станет:
+```json
+{"force": false, "delaySeconds": 0, "reason": "user"}
+```
+
+Серверная сторона получит новые поля без изменений в приложении.

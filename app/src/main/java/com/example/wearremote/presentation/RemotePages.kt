@@ -121,9 +121,9 @@ private fun RemotePagerContent(
         }
     }
 
-    fun cmd(command: String) {
+    fun cmd(command: String, jsonBody: String = "{}") {
         scope.launch {
-            val r = CommandSender.send(host, port, auth, command)
+            val r = CommandSender.send(host, port, auth, command, jsonBody)
             if (r.startsWith("OK")) vibrateOk(context) else vibrateErr(context)
             Toast.makeText(context, r, Toast.LENGTH_SHORT).show()
         }
@@ -150,12 +150,13 @@ private fun RemotePagerContent(
     ) {
         HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
             val isCurrent = pagerState.currentPage == page
+            val onCmd: (String, String) -> Unit = { c, b -> cmd(c, b) }
             when (page) {
-                0 -> MediaPage(::cmd, onOpenSettings)
-                1 -> SoundPage(isCurrent, ::cmd, onOpenSettings)
-                2 -> MicPage(isCurrent, ::cmd, onOpenSettings)
-                3 -> ComputerPage(::cmd, onOpenSettings)
-                4 -> ScreenPage(::cmd, onOpenSettings)
+                0 -> MediaPage(onCmd, onOpenSettings)
+                1 -> SoundPage(isCurrent, onCmd, onOpenSettings)
+                2 -> MicPage(isCurrent, onCmd, onOpenSettings)
+                3 -> ComputerPage(onCmd, onOpenSettings)
+                4 -> ScreenPage(onCmd, onOpenSettings)
             }
         }
 
@@ -177,57 +178,55 @@ private fun RemotePagerContent(
 // ═══════════════════════════════════════════════════════
 
 @Composable
-private fun MediaPage(cmd: (String) -> Unit, onSettings: () -> Unit) {
+private fun MediaPage(cmd: (String, String) -> Unit, onSettings: () -> Unit) {
     PageShell(title = "🎵 Медиа", onSettings = onSettings) {
         BtnRow {
-            CmdChip("⏮ Пред", cmd = { cmd("media_prev") })
-            CmdChip("⏭ След", cmd = { cmd("media_next") })
+            CmdChip("⏮ Пред") { cmd("media/prev",  MediaPrevBody().toJson()) }
+            CmdChip("⏭ След") { cmd("media/next",  MediaNextBody().toJson()) }
         }
         BtnRow {
-            CmdChip("▶ Play",   cmd = { cmd("media_play") })
-            CmdChip("⏸ Пауза", cmd = { cmd("media_pause") })
-        }
-    }
-}
-
-// ═══════════════════════════════════════════════════════
-//  Страница 1 — Звук (безель = громкость)
-// ═══════════════════════════════════════════════════════
-
-@Composable
-private fun SoundPage(isCurrent: Boolean, cmd: (String) -> Unit, onSettings: () -> Unit) {
-    RotaryPageShell(
-        title = "🔊 Звук",
-        hint = "⟳ Безель: громкость",
-        isCurrent = isCurrent,
-        onRotaryUp = { cmd("vol_up") },
-        onRotaryDown = { cmd("vol_down") },
-        onSettings = onSettings
-    ) {
-        BtnRow {
-            CmdChip("🔇 Выкл", cmd = { cmd("sound_mute") })
-            CmdChip("🔊 Вкл",  cmd = { cmd("sound_unmute") })
+            CmdChip("▶ Play")   { cmd("media/play",  MediaPlayBody().toJson()) }
+            CmdChip("⏸ Пауза") { cmd("media/pause", MediaPauseBody().toJson()) }
         }
     }
 }
 
 // ═══════════════════════════════════════════════════════
-//  Страница 2 — Микрофон (безель = чувствительность)
+//  Страница 1 — Звук
 // ═══════════════════════════════════════════════════════
 
 @Composable
-private fun MicPage(isCurrent: Boolean, cmd: (String) -> Unit, onSettings: () -> Unit) {
+private fun SoundPage(isCurrent: Boolean, cmd: (String, String) -> Unit, onSettings: () -> Unit) {
     RotaryPageShell(
-        title = "🎤 Микрофон",
-        hint = "⟳ Безель: чувствительность",
+        title = "🔊 Звук", hint = "⟳ Безель: громкость",
         isCurrent = isCurrent,
-        onRotaryUp = { cmd("mic_sens_up") },
-        onRotaryDown = { cmd("mic_sens_down") },
+        onRotaryUp   = { cmd("sound/vol_up",   VolumeUpBody().toJson()) },
+        onRotaryDown = { cmd("sound/vol_down", VolumeDownBody().toJson()) },
         onSettings = onSettings
     ) {
         BtnRow {
-            CmdChip("🔇 Выкл", cmd = { cmd("mic_off") })
-            CmdChip("🎤 Вкл",  cmd = { cmd("mic_on") })
+            CmdChip("🔇 Выкл") { cmd("sound/mute",   SoundMuteBody().toJson()) }
+            CmdChip("🔊 Вкл")  { cmd("sound/unmute", SoundUnmuteBody().toJson()) }
+        }
+    }
+}
+
+// ═══════════════════════════════════════════════════════
+//  Страница 2 — Микрофон
+// ═══════════════════════════════════════════════════════
+
+@Composable
+private fun MicPage(isCurrent: Boolean, cmd: (String, String) -> Unit, onSettings: () -> Unit) {
+    RotaryPageShell(
+        title = "🎤 Микрофон", hint = "⟳ Безель: чувствительность",
+        isCurrent = isCurrent,
+        onRotaryUp   = { cmd("mic/sens_up",   MicSensUpBody().toJson()) },
+        onRotaryDown = { cmd("mic/sens_down", MicSensDownBody().toJson()) },
+        onSettings = onSettings
+    ) {
+        BtnRow {
+            CmdChip("🔇 Выкл") { cmd("mic/off", MicOffBody().toJson()) }
+            CmdChip("🎤 Вкл")  { cmd("mic/on",  MicOnBody().toJson()) }
         }
     }
 }
@@ -237,15 +236,15 @@ private fun MicPage(isCurrent: Boolean, cmd: (String) -> Unit, onSettings: () ->
 // ═══════════════════════════════════════════════════════
 
 @Composable
-private fun ComputerPage(cmd: (String) -> Unit, onSettings: () -> Unit) {
+private fun ComputerPage(cmd: (String, String) -> Unit, onSettings: () -> Unit) {
     PageShell(title = "💻 Компьютер", onSettings = onSettings) {
         BtnRow {
-            CmdChip("🔒 Блок", cmd = { cmd("pc_lock") })
-            CmdChip("💤 Сон",  cmd = { cmd("pc_sleep") })
+            CmdChip("🔒 Блок") { cmd("pc/lock",     PcLockBody().toJson()) }
+            CmdChip("💤 Сон")  { cmd("pc/sleep",    PcSleepBody().toJson()) }
         }
         BtnRow {
-            CmdChip("🔄 Рест",  cmd = { cmd("pc_restart") })
-            CmdChip("⏻ Выкл", cmd = { cmd("pc_shutdown") })
+            CmdChip("🔄 Рест")  { cmd("pc/restart",  PcRestartBody().toJson()) }
+            CmdChip("🔌 Выкл") { cmd("pc/shutdown", PcShutdownBody().toJson()) }
         }
     }
 }
@@ -255,11 +254,11 @@ private fun ComputerPage(cmd: (String) -> Unit, onSettings: () -> Unit) {
 // ═══════════════════════════════════════════════════════
 
 @Composable
-private fun ScreenPage(cmd: (String) -> Unit, onSettings: () -> Unit) {
+private fun ScreenPage(cmd: (String, String) -> Unit, onSettings: () -> Unit) {
     PageShell(title = "🖥 Экран", onSettings = onSettings) {
         BtnRow {
-            CmdChip("💡 Вкл",  cmd = { cmd("screen_on") })
-            CmdChip("🌙 Выкл", cmd = { cmd("screen_off") })
+            CmdChip("💡 Вкл")  { cmd("screen/on",  ScreenOnBody().toJson()) }
+            CmdChip("🌙 Выкл") { cmd("screen/off", ScreenOffBody().toJson()) }
         }
     }
 }
