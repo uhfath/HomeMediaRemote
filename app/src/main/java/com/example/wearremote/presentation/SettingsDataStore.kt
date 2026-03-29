@@ -17,14 +17,14 @@ class SettingsDataStore(private val context: Context) {
 
     companion object {
         private val LAST_PAGE_KEY = intPreferencesKey("last_page")
-        private val IP_ADDRESS_KEY = stringPreferencesKey("ip_address")
+        private val HOST_ADDRESS_KEY = stringPreferencesKey("host_address")
         private val PORT_KEY = stringPreferencesKey("port")
         private val AUTH_CODE_KEY = stringPreferencesKey("auth_code")
     }
 
     // Потоки для чтения сохранённых значений
-    val ipAddress: Flow<String> = context.dataStore.data.map { prefs ->
-        prefs[IP_ADDRESS_KEY] ?: ""
+    val host: Flow<String> = context.dataStore.data.map { prefs ->
+        prefs[HOST_ADDRESS_KEY] ?: ""
     }
 
     val port: Flow<String> = context.dataStore.data.map { prefs ->
@@ -42,9 +42,9 @@ class SettingsDataStore(private val context: Context) {
     }
 
     // Функция сохранения всех настроек
-    suspend fun saveSettings(ip: String, port: String, authCode: String) {
+    suspend fun saveSettings(host: String, port: String, authCode: String) {
         context.dataStore.edit { prefs ->
-            prefs[IP_ADDRESS_KEY] = ip
+            prefs[HOST_ADDRESS_KEY] = host
             prefs[PORT_KEY] = port
             prefs[AUTH_CODE_KEY] = authCode
         }

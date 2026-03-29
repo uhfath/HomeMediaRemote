@@ -97,7 +97,7 @@ private fun RemotePagerContent(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    val ip by dataStore.ipAddress.collectAsState(initial = "")
+    val host by dataStore.host.collectAsState(initial = "")
     val port by dataStore.port.collectAsState(initial = "")
     val auth by dataStore.authCode.collectAsState(initial = "")
 
@@ -112,10 +112,10 @@ private fun RemotePagerContent(
 
     // ── Авто-команда от плитки (выполняется один раз) ──
     var autoSent by remember { mutableStateOf(false) }
-    LaunchedEffect(autoCommand, ip) {
-        if (autoCommand != null && ip.isNotEmpty() && !autoSent) {
+    LaunchedEffect(autoCommand, host) {
+        if (autoCommand != null && host.isNotEmpty() && !autoSent) {
             autoSent = true
-            val r = CommandSender.send(ip, port, auth, autoCommand)
+            val r = CommandSender.send(host, port, auth, autoCommand)
             if (r.startsWith("OK")) vibrateOk(context) else vibrateErr(context)
             Toast.makeText(context, r, Toast.LENGTH_SHORT).show()
         }
@@ -123,7 +123,7 @@ private fun RemotePagerContent(
 
     fun cmd(command: String) {
         scope.launch {
-            val r = CommandSender.send(ip, port, auth, command)
+            val r = CommandSender.send(host, port, auth, command)
             if (r.startsWith("OK")) vibrateOk(context) else vibrateErr(context)
             Toast.makeText(context, r, Toast.LENGTH_SHORT).show()
         }

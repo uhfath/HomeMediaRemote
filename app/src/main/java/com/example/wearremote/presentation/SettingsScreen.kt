@@ -42,11 +42,11 @@ fun SettingsScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    val savedIp by dataStore.ipAddress.collectAsState(initial = "")
+    val savedHost by dataStore.host.collectAsState(initial = "")
     val savedPort by dataStore.port.collectAsState(initial = "")
     val savedAuth by dataStore.authCode.collectAsState(initial = "")
 
-    var ipInput by remember(savedIp) { mutableStateOf(savedIp) }
+    var hostInput by remember(savedHost) { mutableStateOf(savedHost) }
     var portInput by remember(savedPort) { mutableStateOf(savedPort) }
     var authInput by remember(savedAuth) { mutableStateOf(savedAuth) }
 
@@ -58,7 +58,7 @@ fun SettingsScreen(
         if (result.resultCode == Activity.RESULT_OK) {
             val value = result.data?.getStringExtra(InputActivity.EXTRA_RESULT) ?: ""
             when (editingField) {
-                "ip"   -> ipInput = value
+                "host"   -> hostInput = value
                 "port" -> portInput = value
                 "auth" -> authInput = value
             }
@@ -106,7 +106,7 @@ fun SettingsScreen(
                 Spacer(Modifier.height(4.dp))
             }
 
-            if (savedIp.isNotEmpty()) {
+            if (savedHost.isNotEmpty()) {
                 item {
                     Chip(
                         label = { Text("Пульт →") },
@@ -121,12 +121,12 @@ fun SettingsScreen(
             item {
                 Chip(
                     label = { Text("Адрес сервера") },
-                    secondaryLabel = { Text(ipInput.ifEmpty { "нажмите для ввода" }) },
+                    secondaryLabel = { Text(hostInput.ifEmpty { "нажмите для ввода" }) },
                     onClick = {
                         openInput(
-                            "ip",
+                            "host",
                             "Адрес сервера",
-                            ipInput,
+                            hostInput,
                             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI
                         )
                     },
@@ -169,7 +169,7 @@ fun SettingsScreen(
                 Button(
                     onClick = {
                         scope.launch {
-                            dataStore.saveSettings(ipInput, portInput, authInput)
+                            dataStore.saveSettings(hostInput, portInput, authInput)
                             Toast.makeText(context, "Сохранено!", Toast.LENGTH_SHORT).show()
                             onNavigateToRemote()
                         }

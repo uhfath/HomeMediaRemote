@@ -39,8 +39,8 @@ fun WearRemoteApp(tileTargetPage: Int = -1, autoCommand: String? = null) {
     var screen by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
-        val ip = dataStore.ipAddress.first()
-        screen = if (ip.isNotEmpty()) "remote" else "settings"
+        val host = dataStore.host.first()
+        screen = if (host.isNotEmpty()) "remote" else "settings"
     }
 
     Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
