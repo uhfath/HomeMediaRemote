@@ -51,6 +51,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlin.math.abs
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.ui.input.pointer.pointerInput
 
 // ═══════════════════════════════════════════════════════
 //  Константы
@@ -67,30 +69,29 @@ private const val ROTARY_THRESHOLD = 30f   // чувствительность �
 fun RemotePager(
     dataStore: SettingsDataStore,
     targetPage: Int?,
+    autoCommand: String? = null,
     onOpenSettings: () -> Unit
 ) {
-    // Не гасить экран
     val view = LocalView.current
     DisposableEffect(Unit) {
         view.keepScreenOn = true
         onDispose { view.keepScreenOn = false }
     }
 
-    // Загружаем стартовую страницу ОДИН раз
     var initialPage by remember { mutableStateOf<Int?>(null) }
     LaunchedEffect(Unit) {
         initialPage = targetPage ?: dataStore.lastPage.first()
     }
 
     val startPage = initialPage ?: return
-
-    RemotePagerContent(startPage, dataStore, onOpenSettings)
+    RemotePagerContent(startPage, dataStore, autoCommand, onOpenSettings)
 }
 
 @Composable
 private fun RemotePagerContent(
     startPage: Int,
     dataStore: SettingsDataStore,
+    autoCommand: String?,
     onOpenSettings: () -> Unit
 ) {
     val context = LocalContext.current
@@ -105,22 +106,48 @@ private fun RemotePagerContent(
         pageCount = { PAGE_COUNT }
     )
 
-    // Сохраняем текущую страницу
     LaunchedEffect(pagerState.currentPage) {
         dataStore.saveLastPage(pagerState.currentPage)
     }
 
-    // Общий колбэк отправки команды
-    fun cmd(command: String) {
-        scope.launch {
-            val result = CommandSender.send(ip, port, auth, command)
-            if (result.startsWith("OK")) vibrateOk(context) else vibrateErr(context)
-            Toast.makeText(context, result, Toast.LENGTH_SHORT).show()
+    // ── Авто-команда от плитки (выполняется один раз) ──
+    var autoSent by remember { mutableStateOf(false) }
+    LaunchedEffect(autoCommand, ip) {
+        if (autoCommand != null && ip.isNotEmpty() && !autoSent) {
+            autoSent = true
+            val r = CommandSender.send(ip, port, auth, autoCommand)
+            if (r.startsWith("OK")) vibrateOk(context) else vibrateErr(context)
+            Toast.makeText(context, r, Toast.LENGTH_SHORT).show()
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    fun cmd(command: String) {
+        scope.launch {
+            val r = CommandSender.send(ip, port, auth, command)
+            if (r.startsWith("OK")) vibrateOk(context) else vibrateErr(context)
+            Toast.makeText(context, r, Toast.LENGTH_SHORT).show()
+        }
+    }
 
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black)
+            // ── Свайп вверх → настройки ──
+            .pointerInput(Unit) {
+                while (true) {
+                    var totalY = 0f
+                    detectVerticalDragGestures(
+                        onDragStart = { totalY = 0f },
+                        onDragEnd = {
+                            if (totalY < -80f) onOpenSettings()
+                            totalY = 0f
+                        },
+                        onVerticalDrag = { _, dy -> totalY += dy }
+                    )
+                }
+            }
+    ) {
         HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
             val isCurrent = pagerState.currentPage == page
             when (page) {
@@ -132,7 +159,6 @@ private fun RemotePagerContent(
             }
         }
 
-        // Индикатор страниц (точки)
         HorizontalPageIndicator(
             pageIndicatorState = remember {
                 object : PageIndicatorState {
@@ -141,9 +167,7 @@ private fun RemotePagerContent(
                     override val pageOffset get() = pagerState.currentPageOffsetFraction
                 }
             },
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 1.dp)
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 1.dp)
         )
     }
 }

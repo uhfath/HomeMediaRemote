@@ -6,6 +6,8 @@ import android.text.InputType
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,6 +22,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
@@ -47,10 +50,8 @@ fun SettingsScreen(
     var portInput by remember(savedPort) { mutableStateOf(savedPort) }
     var authInput by remember(savedAuth) { mutableStateOf(savedAuth) }
 
-    // Какое поле редактируем (для обработки результата)
     var editingField by remember { mutableStateOf<String?>(null) }
 
-    // ── Единый launcher для всех полей ──
     val inputLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -65,7 +66,6 @@ fun SettingsScreen(
         editingField = null
     }
 
-    // ── Запуск InputActivity ──
     fun openInput(
         field: String,
         label: String,
@@ -82,91 +82,101 @@ fun SettingsScreen(
         )
     }
 
-    // ── UI ──
     val listState = rememberScalingLazyListState()
 
-    ScalingLazyColumn(
-        state = listState,
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(
-            start = 16.dp, end = 16.dp, top = 40.dp, bottom = 40.dp
-        ),
-        horizontalAlignment = Alignment.CenterHorizontally
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black)
     ) {
-        item {
-            Text(
-                text = "Настройки",
-                style = MaterialTheme.typography.title3,
-                color = MaterialTheme.colors.primary
-            )
-            Spacer(Modifier.height(4.dp))
-        }
-
-        if (savedIp.isNotEmpty()) {
+        ScalingLazyColumn(
+            state = listState,
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(
+                start = 16.dp, end = 16.dp, top = 40.dp, bottom = 40.dp
+            ),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             item {
-                Chip(
-                    label = { Text("Пульт →") },
-                    onClick = onNavigateToRemote,
-                    colors = ChipDefaults.primaryChipColors(),
-                    modifier = Modifier.fillMaxWidth()
+                Text(
+                    text = "Настройки",
+                    style = MaterialTheme.typography.title3,
+                    color = MaterialTheme.colors.primary
                 )
                 Spacer(Modifier.height(4.dp))
             }
-        }
 
-        // ── IP-адрес ──
-        item {
-            Chip(
-                label = { Text("IP-адрес") },
-                secondaryLabel = { Text(ipInput.ifEmpty { "нажмите для ввода" }) },
-                onClick = {
-                    openInput(
-                        "ip",
-                        "Адрес сервера",
-                        ipInput,
-                        inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI
+            if (savedIp.isNotEmpty()) {
+                item {
+                    Chip(
+                        label = { Text("Пульт →") },
+                        onClick = onNavigateToRemote,
+                        colors = ChipDefaults.primaryChipColors(),
+                        modifier = Modifier.fillMaxWidth()
                     )
-                },
-                colors = ChipDefaults.secondaryChipColors(),
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
+                    Spacer(Modifier.height(4.dp))
+                }
+            }
 
-        // ── Порт ──
-        item {
-            Chip(
-                label = { Text("Порт") },
-                secondaryLabel = { Text(portInput.ifEmpty { "нажмите для ввода" }) },
-                onClick = { openInput("port", "Порт", portInput) },
-                colors = ChipDefaults.secondaryChipColors(),
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
+            item {
+                Chip(
+                    label = { Text("Адрес сервера") },
+                    secondaryLabel = { Text(ipInput.ifEmpty { "нажмите для ввода" }) },
+                    onClick = {
+                        openInput(
+                            "ip",
+                            "Адрес сервера",
+                            ipInput,
+                            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI
+                        )
+                    },
+                    colors = ChipDefaults.secondaryChipColors(
+                        backgroundColor = Color(0xFF404040),
+                        contentColor = Color.White
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
 
-        // ── Код авторизации ──
-        item {
-            Chip(
-                label = { Text("Код авторизации") },
-                secondaryLabel = { Text(authInput.ifEmpty { "нажмите для ввода" }) },
-                onClick = { openInput("auth", "Код авторизации", authInput) },
-                colors = ChipDefaults.secondaryChipColors(),
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
+            item {
+                Chip(
+                    label = { Text("Порт") },
+                    secondaryLabel = { Text(portInput.ifEmpty { "нажмите для ввода" }) },
+                    onClick = { openInput("port", "Порт", portInput) },
+                    colors = ChipDefaults.secondaryChipColors(
+                        backgroundColor = Color(0xFF404040),
+                        contentColor = Color.White
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
 
-        // ── Сохранить ──
-        item {
-            Spacer(Modifier.height(8.dp))
-            Button(
-                onClick = {
-                    scope.launch {
-                        dataStore.saveSettings(ipInput, portInput, authInput)
-                        Toast.makeText(context, "Сохранено!", Toast.LENGTH_SHORT).show()
-                        onNavigateToRemote()
-                    }
-                },
-                modifier = Modifier.fillMaxWidth(0.75f)
-            ) { Text("Сохранить ✓") }
+            item {
+                Chip(
+                    label = { Text("Код авторизации") },
+                    secondaryLabel = { Text(authInput.ifEmpty { "нажмите для ввода" }) },
+                    onClick = { openInput("auth", "Код авторизации", authInput) },
+                    colors = ChipDefaults.secondaryChipColors(
+                        backgroundColor = Color(0xFF404040),
+                        contentColor = Color.White
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            item {
+                Spacer(Modifier.height(8.dp))
+                Button(
+                    onClick = {
+                        scope.launch {
+                            dataStore.saveSettings(ipInput, portInput, authInput)
+                            Toast.makeText(context, "Сохранено!", Toast.LENGTH_SHORT).show()
+                            onNavigateToRemote()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(0.75f)
+                ) { Text("Сохранить ✓") }
+            }
         }
     }
 }
