@@ -4,36 +4,32 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.Paint
 import android.graphics.Path
-import android.graphics.RectF
-import android.graphics.Typeface
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
+import android.view.View
+import android.widget.FrameLayout
+import androidx.core.content.ContextCompat
+import androidx.wear.protolayout.LayoutElementBuilders
+import androidx.wear.protolayout.ResourceBuilders
 import java.io.File
+import java.util.concurrent.CountDownLatch
 
+@Suppress("DEPRECATION")
 object TilePreviewGenerator {
 
-    private data class Info(
-        val id: String, val icon: String, val label: String,
-        val buttons: List<List<String>>
-    )
-
-    private val TILES = listOf(
-        Info("media",    "🎵", "Медиа",     listOf(listOf("⏮️","▶️"), listOf("⏸️","⏭️"))),
-        Info("sound",    "🔊", "Звук",      listOf(listOf("🔇","🔊"), listOf("➖","➕"))),
-        Info("mic",      "🎤", "Микрофон",  listOf(listOf("🔇","🎤"), listOf("➖","➕"))),
-        Info("computer", "💻", "Компьютер", listOf(listOf("🔒","💤"), listOf("🔄","🔌"))),
-        Info("screen",   "🖥", "Экран",     listOf(listOf("💡","🌙")))
-    )
+    private const val SIZE_PX = 384
 
     fun generate(context: Context) {
         val dir = File(context.filesDir, "tile_previews")
-        if (!dir.exists())
-            dir.mkdirs()
+        if (!dir.exists()) dir.mkdirs()
 
-        TILES.forEach { tile ->
-            val bmp = render(tile)
-            File(dir, "tile_preview_${tile.id}.png").outputStream().use {
+        TileDefs.ALL.forEach { def ->
+            val layout    = TileLayoutBuilder.buildLayout(def, context.packageName)
+            val resources = TileLayoutBuilder.buildResources(def)
+            val bmp = renderOnMainThread(context, layout, resources)
+            File(dir, "tile_preview_${def.id}.png").outputStream().use {
                 bmp.compress(Bitmap.CompressFormat.PNG, 100, it)
             }
             bmp.recycle()
@@ -41,39 +37,118 @@ object TilePreviewGenerator {
         Log.d("TilePreview", "Превью сохранены: ${dir.absolutePath}")
     }
 
-    private fun render(tile: Info): Bitmap {
-        val s = 384
-        val bmp = Bitmap.createBitmap(s, s, Bitmap.Config.ARGB_8888)
-        val c = Canvas(bmp)
+    /* ════════════════════════════════════════════════════════════
+     *  protolayout wrapper  →  tiles wrapper
+     *  Без хардкода proto-классов: всё через рефлексию.
+     *
+     *  Стратегия 1 — прямая передача proto-объекта
+     *    (tiles 1.4+ использует protolayout-proto внутри,
+     *     поэтому fromProto() часто принимает его напрямую)
+     *
+     *  Стратегия 2 — байтовый round-trip
+     *    toByteArray() → parseFrom() для нужного proto-типа
+     * ════════════════════════════════════════════════════════════ */
 
-        c.clipPath(Path().apply { addCircle(s / 2f, s / 2f, s / 2f, Path.Direction.CW) })
-        c.drawColor(Color.BLACK)
+    @Suppress("UNCHECKED_CAST")
+    private fun <T> convertToTiles(src: Any, tilesClass: Class<T>): T {
+        // src.toProto() → protobuf-объект (protolayout proto)
+        val proto = src.javaClass.getMethod("toProto").invoke(src)!!
 
-        val titleP = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = 0xFFBBDEFB.toInt(); textSize = 38f
-            textAlign = Paint.Align.CENTER; typeface = Typeface.DEFAULT_BOLD
-        }
-        c.drawText("${tile.icon} ${tile.label}", s / 2f, 120f, titleP)
+        // Все перегрузки fromProto(), отсортированные по числу параметров
+        val methods = tilesClass.declaredMethods
+            .filter { it.name == "fromProto" }
+            .sortedBy { it.parameterCount }
+            .onEach { it.isAccessible = true }
 
-        val bgP = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFF404040.toInt() }
-        val txP = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.WHITE; textSize = 36f; textAlign = Paint.Align.CENTER
-        }
-
-        val margin = 55f; val gap = 14f; val bh = 66f; val sy = 155f
-
-        tile.buttons.forEachIndexed { ri, row ->
-            val y = sy + ri * (bh + gap)
-            val tw = s - 2 * margin
-            val bw = (tw - (row.size - 1) * gap) / row.size
-            row.forEachIndexed { ci, label ->
-                val x = margin + ci * (bw + gap)
-                val r = RectF(x, y, x + bw, y + bh)
-                c.drawRoundRect(r, 24f, 24f, bgP)
-                c.drawText(label, r.centerX(),
-                    r.centerY() - (txP.descent() + txP.ascent()) / 2, txP)
+        // Стратегия 1: proto-объект подходит по типу → передаём как есть
+        for (m in methods) {
+            if (m.parameterTypes[0].isInstance(proto)) {
+                val args = Array(m.parameterCount) { i ->
+                    if (i == 0) proto else null
+                }
+                return m.invoke(null, *args) as T
             }
         }
+
+        // Стратегия 2: сериализуем в байты, парсим в ожидаемый proto-класс
+        val bytes = proto.javaClass
+            .getMethod("toByteArray")
+            .invoke(proto) as ByteArray
+
+        for (m in methods) {
+            runCatching {
+                val expectedClass = m.parameterTypes[0]
+                val parsed = expectedClass
+                    .getMethod("parseFrom", ByteArray::class.java)
+                    .invoke(null, bytes)!!
+                val args = Array(m.parameterCount) { i ->
+                    if (i == 0) parsed else null
+                }
+                return m.invoke(null, *args) as T
+            }
+        }
+
+        error("Cannot convert ${src.javaClass.name} → ${tilesClass.name}")
+    }
+
+    private fun toTilesLayout(
+        layout: LayoutElementBuilders.Layout
+    ): androidx.wear.tiles.LayoutElementBuilders.Layout =
+        convertToTiles(layout,
+            androidx.wear.tiles.LayoutElementBuilders.Layout::class.java)
+
+    private fun toTilesResources(
+        resources: ResourceBuilders.Resources
+    ): androidx.wear.tiles.ResourceBuilders.Resources =
+        convertToTiles(resources,
+            androidx.wear.tiles.ResourceBuilders.Resources::class.java)
+
+    /* ═══════ rendering ═══════ */
+
+    private fun renderOnMainThread(
+        context: Context,
+        layout: LayoutElementBuilders.Layout,
+        resources: ResourceBuilders.Resources
+    ): Bitmap {
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            return doRender(context, layout, resources)
+        }
+        val latch = CountDownLatch(1)
+        var result: Bitmap? = null
+        Handler(Looper.getMainLooper()).post {
+            result = doRender(context, layout, resources)
+            latch.countDown()
+        }
+        latch.await()
+        return result!!
+    }
+
+    private fun doRender(
+        context: Context,
+        layout: LayoutElementBuilders.Layout,
+        resources: ResourceBuilders.Resources
+    ): Bitmap {
+        val parent = FrameLayout(context)
+
+        val renderer = androidx.wear.tiles.renderer.TileRenderer(
+            context,
+            toTilesLayout(layout),
+            toTilesResources(resources),
+            ContextCompat.getMainExecutor(context)
+        ) { /* LoadActionListener — no-op */ }
+        renderer.inflate(parent)
+
+        val spec = View.MeasureSpec.makeMeasureSpec(SIZE_PX, View.MeasureSpec.EXACTLY)
+        parent.measure(spec, spec)
+        parent.layout(0, 0, SIZE_PX, SIZE_PX)
+
+        val bmp = Bitmap.createBitmap(SIZE_PX, SIZE_PX, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bmp)
+        canvas.clipPath(Path().apply {
+            addCircle(SIZE_PX / 2f, SIZE_PX / 2f, SIZE_PX / 2f, Path.Direction.CW)
+        })
+        canvas.drawColor(Color.BLACK)
+        parent.draw(canvas)
         return bmp
     }
 }

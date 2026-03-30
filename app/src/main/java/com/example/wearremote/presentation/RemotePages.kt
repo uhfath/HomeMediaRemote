@@ -4,15 +4,20 @@ import android.content.Context
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.widget.Toast
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -21,6 +26,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -36,30 +42,30 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.rotary.onRotaryScrollEvent
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.wear.compose.material.Chip
-import androidx.wear.compose.material.ChipDefaults
 import androidx.wear.compose.material.HorizontalPageIndicator
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.PageIndicatorState
 import androidx.wear.compose.material.Text
+import com.example.wearremote.R
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlin.math.abs
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
-import androidx.compose.ui.input.pointer.pointerInput
 
 // ═══════════════════════════════════════════════════════
 //  Константы
 // ═══════════════════════════════════════════════════════
 
 const val PAGE_COUNT = 5
-private const val ROTARY_THRESHOLD = 30f   // чувствительность безеля
+private const val ROTARY_THRESHOLD = 30f
 
 // ═══════════════════════════════════════════════════════
 //  Обёртка-пейджер со всеми экранами
@@ -110,7 +116,7 @@ private fun RemotePagerContent(
         dataStore.saveLastPage(pagerState.currentPage)
     }
 
-    // ── Авто-команда от плитки (выполняется один раз) ──
+    // ── Авто-команда от плитки ──
     var autoSent by remember { mutableStateOf(false) }
     LaunchedEffect(autoCommand, host) {
         if (autoCommand != null && host.isNotEmpty() && !autoSent) {
@@ -133,7 +139,6 @@ private fun RemotePagerContent(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
-            // ── Свайп вверх → настройки ──
             .pointerInput(Unit) {
                 while (true) {
                     var totalY = 0f
@@ -168,7 +173,9 @@ private fun RemotePagerContent(
                     override val pageOffset get() = pagerState.currentPageOffsetFraction
                 }
             },
-            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 1.dp)
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 1.dp)
         )
     }
 }
@@ -179,14 +186,14 @@ private fun RemotePagerContent(
 
 @Composable
 private fun MediaPage(cmd: (String, String) -> Unit, onSettings: () -> Unit) {
-    PageShell(title = "🎵 Медиа", onSettings = onSettings) {
+    PageShell(title = "Медиа", onSettings = onSettings) {
         BtnRow {
-            CmdChip("⏮️ Пред") { cmd("media/prev",  MediaPrevBody().toJson()) }
-            CmdChip("⏭️ След") { cmd("media/next",  MediaNextBody().toJson()) }
+            IconBtn(R.drawable.ic_skip_previous, Color.White) { cmd("media/prev",  MediaPrevBody().toJson()) }
+            IconBtn(R.drawable.ic_play_arrow, Color.White)    { cmd("media/play",  MediaPlayBody().toJson()) }
         }
         BtnRow {
-            CmdChip("▶️ Play")   { cmd("media/play",  MediaPlayBody().toJson()) }
-            CmdChip("⏸️ Пауза") { cmd("media/pause", MediaPauseBody().toJson()) }
+            IconBtn(R.drawable.ic_pause, Color.White)       { cmd("media/pause", MediaPauseBody().toJson()) }
+            IconBtn(R.drawable.ic_skip_next, Color.White)   { cmd("media/next",  MediaNextBody().toJson()) }
         }
     }
 }
@@ -198,15 +205,15 @@ private fun MediaPage(cmd: (String, String) -> Unit, onSettings: () -> Unit) {
 @Composable
 private fun SoundPage(isCurrent: Boolean, cmd: (String, String) -> Unit, onSettings: () -> Unit) {
     RotaryPageShell(
-        title = "🔊 Звук", hint = "⟳ Безель: громкость",
+        title = "Звук", hint = "⟳ Безель: громкость",
         isCurrent = isCurrent,
         onRotaryUp   = { cmd("sound/vol_up",   VolumeUpBody().toJson()) },
         onRotaryDown = { cmd("sound/vol_down", VolumeDownBody().toJson()) },
         onSettings = onSettings
     ) {
         BtnRow {
-            CmdChip("🔇 Выкл") { cmd("sound/mute",   SoundMuteBody().toJson()) }
-            CmdChip("🔊 Вкл")  { cmd("sound/unmute", SoundUnmuteBody().toJson()) }
+            IconBtn(R.drawable.ic_volume_off, Color.White) { cmd("sound/mute",   SoundMuteBody().toJson()) }
+            IconBtn(R.drawable.ic_volume_up, Color.White)  { cmd("sound/unmute", SoundUnmuteBody().toJson()) }
         }
     }
 }
@@ -218,15 +225,15 @@ private fun SoundPage(isCurrent: Boolean, cmd: (String, String) -> Unit, onSetti
 @Composable
 private fun MicPage(isCurrent: Boolean, cmd: (String, String) -> Unit, onSettings: () -> Unit) {
     RotaryPageShell(
-        title = "🎤 Микрофон", hint = "⟳ Безель: чувствительность",
+        title = "Микрофон", hint = "⟳ Безель: чувствительность",
         isCurrent = isCurrent,
         onRotaryUp   = { cmd("mic/sens_up",   MicSensUpBody().toJson()) },
         onRotaryDown = { cmd("mic/sens_down", MicSensDownBody().toJson()) },
         onSettings = onSettings
     ) {
         BtnRow {
-            CmdChip("🔇 Выкл") { cmd("mic/off", MicOffBody().toJson()) }
-            CmdChip("🎤 Вкл")  { cmd("mic/on",  MicOnBody().toJson()) }
+            IconBtn(R.drawable.ic_mic_off, Color.White) { cmd("mic/off", MicOffBody().toJson()) }
+            IconBtn(R.drawable.ic_mic, Color.White)     { cmd("mic/on",  MicOnBody().toJson()) }
         }
     }
 }
@@ -237,14 +244,14 @@ private fun MicPage(isCurrent: Boolean, cmd: (String, String) -> Unit, onSetting
 
 @Composable
 private fun ComputerPage(cmd: (String, String) -> Unit, onSettings: () -> Unit) {
-    PageShell(title = "💻 Компьютер", onSettings = onSettings) {
+    PageShell(title = "Компьютер", onSettings = onSettings) {
         BtnRow {
-            CmdChip("🔒 Блок") { cmd("pc/lock",     PcLockBody().toJson()) }
-            CmdChip("💤 Сон")  { cmd("pc/sleep",    PcSleepBody().toJson()) }
+            IconBtn(R.drawable.ic_lock, Color.White)    { cmd("pc/lock",     PcLockBody().toJson()) }
+            IconBtn(R.drawable.ic_bedtime, Color.White) { cmd("pc/sleep",    PcSleepBody().toJson()) }
         }
         BtnRow {
-            CmdChip("🔄 Рестарт")    { cmd("pc/restart",  PcRestartBody().toJson()) }
-            CmdChip("🔌 Выкл")       { cmd("pc/shutdown", PcShutdownBody().toJson()) }
+            IconBtn(R.drawable.ic_refresh, Color.White)            { cmd("pc/restart",  PcRestartBody().toJson()) }
+            IconBtn(R.drawable.ic_power_settings_new, Color.White) { cmd("pc/shutdown", PcShutdownBody().toJson()) }
         }
     }
 }
@@ -255,37 +262,51 @@ private fun ComputerPage(cmd: (String, String) -> Unit, onSettings: () -> Unit) 
 
 @Composable
 private fun ScreenPage(cmd: (String, String) -> Unit, onSettings: () -> Unit) {
-    PageShell(title = "🖥 Экран", onSettings = onSettings) {
+    PageShell(title = "Экран", onSettings = onSettings) {
         BtnRow {
-            CmdChip("💡 Вкл")  { cmd("screen/on",  ScreenOnBody().toJson()) }
-            CmdChip("🌙 Выкл") { cmd("screen/off", ScreenOffBody().toJson()) }
+            IconBtn(R.drawable.ic_brightness_high, Color.White) { cmd("screen/on",  ScreenOnBody().toJson()) }
+            IconBtn(R.drawable.ic_dark_mode, Color.White)       { cmd("screen/off", ScreenOffBody().toJson()) }
         }
     }
 }
 
 // ═══════════════════════════════════════════════════════
 //  Каркас обычной страницы
+//  Заголовок → [кнопки на всё место] → ⚙
 // ═══════════════════════════════════════════════════════
 
 @Composable
 private fun PageShell(
     title: String,
     onSettings: () -> Unit,
-    content: @Composable () -> Unit
+    content: @Composable ColumnScope.() -> Unit
 ) {
-    Box(
-        modifier = Modifier.fillMaxSize().background(Color.Black),
-        contentAlignment = Alignment.Center
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Spacer(Modifier.height(10.dp))
+        Text(
+            text = title,
+            fontSize = 14.sp,
+            color = Color(0xFFBBDEFB.toInt()),
+            style = MaterialTheme.typography.title3
+        )
+
+        // ── Кнопки занимают всё оставшееся место ──
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text(title, style = MaterialTheme.typography.title3)
-            Spacer(Modifier.height(4.dp))
-            content()
-        }
-        SettingsBtn(Modifier.align(Alignment.BottomCenter), onSettings)
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 6.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+            content = content
+        )
+
+        SettingsBtn(onClick = onSettings)
+        Spacer(Modifier.height(8.dp))
     }
 }
 
@@ -301,7 +322,7 @@ private fun RotaryPageShell(
     onRotaryUp: () -> Unit,
     onRotaryDown: () -> Unit,
     onSettings: () -> Unit,
-    content: @Composable () -> Unit
+    content: @Composable ColumnScope.() -> Unit
 ) {
     val focusRequester = remember { FocusRequester() }
     var rotaryAccum by remember { mutableStateOf(0f) }
@@ -310,13 +331,11 @@ private fun RotaryPageShell(
     LaunchedEffect(isCurrent) {
         if (isCurrent) focusRequester.requestFocus()
     }
-
-    // Сбрасываем подсказку через секунду
     LaunchedEffect(feedback) {
         if (feedback.isNotEmpty()) { delay(800); feedback = "" }
     }
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
@@ -334,22 +353,33 @@ private fun RotaryPageShell(
             }
             .focusRequester(focusRequester)
             .focusable(),
-        contentAlignment = Alignment.Center
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Spacer(Modifier.height(6.dp))
+        Text(
+            text = title,
+            fontSize = 14.sp,
+            color = Color(0xFFBBDEFB.toInt()),
+            style = MaterialTheme.typography.title3
+        )
+        Text(
+            text = if (feedback.isNotEmpty()) feedback else hint,
+            fontSize = 11.sp,
+            color = if (feedback.isNotEmpty()) Color.White else Color.Gray
+        )
+
+        // ── Кнопки занимают всё оставшееся место ──
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text(title, style = MaterialTheme.typography.title3)
-            Text(
-                text = if (feedback.isNotEmpty()) feedback else hint,
-                fontSize = 11.sp,
-                color = if (feedback.isNotEmpty()) Color.White else Color.Gray
-            )
-            Spacer(Modifier.height(2.dp))
-            content()
-        }
-        SettingsBtn(Modifier.align(Alignment.BottomCenter), onSettings)
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 4.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+            content = content
+        )
+
+        SettingsBtn(onClick = onSettings)
+        Spacer(Modifier.height(8.dp))
     }
 }
 
@@ -357,33 +387,44 @@ private fun RotaryPageShell(
 //  Переиспользуемые компоненты
 // ═══════════════════════════════════════════════════════
 
+/** Ряд кнопок, занимает равную долю вертикального пространства */
 @Composable
-private fun BtnRow(content: @Composable RowScope.() -> Unit) {
+private fun ColumnScope.BtnRow(content: @Composable RowScope.() -> Unit) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .weight(1f),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
         content = content
     )
 }
 
+/** Кнопка-иконка, растягивается на всё доступное место */
 @Composable
-private fun RowScope.CmdChip(label: String, cmd: () -> Unit) {
-    Chip(
-        label = { Text(label, maxLines = 1, fontSize = 12.sp) },
-        onClick = cmd,
-        colors = ChipDefaults.secondaryChipColors(
-            backgroundColor = Color(0xFF404040),
-            contentColor = Color.White
-        ),
-        modifier = Modifier.weight(1f)
-    )
+private fun RowScope.IconBtn(@DrawableRes iconRes: Int, tintColor: Color, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .weight(1f)
+            .fillMaxHeight()
+            .clip(RoundedCornerShape(14.dp))
+            .background(Color(0xFF404040))
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Image(
+            painter = painterResource(iconRes),
+            contentDescription = null,
+            colorFilter = ColorFilter.tint(tintColor),
+            modifier = Modifier.size(48.dp)
+        )
+    }
 }
 
+/** Кнопка входа в настройки (⚙) */
 @Composable
-private fun SettingsBtn(modifier: Modifier, onClick: () -> Unit) {
+private fun SettingsBtn(modifier: Modifier = Modifier, onClick: () -> Unit) {
     Box(
         modifier = modifier
-            .padding(bottom = 12.dp)
             .size(28.dp)
             .clip(CircleShape)
             .background(Color(0xFF333333))
