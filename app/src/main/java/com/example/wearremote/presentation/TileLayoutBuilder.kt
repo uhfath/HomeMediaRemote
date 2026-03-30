@@ -9,7 +9,7 @@ import androidx.wear.protolayout.ResourceBuilders
 
 object TileLayoutBuilder {
 
-    private const val ICON_DP      = 24f
+    private const val ICON_DP      = 48f
     private const val CORNER_DP    = 14f
     private const val GAP_DP       = 6f
     private const val PAD_H_DP     = 14f
@@ -85,7 +85,7 @@ object TileLayoutBuilder {
             .setModifiers(
                 ModifiersBuilders.Modifiers.Builder()
                     .setClickable(openClickable(def.pageIndex, pkg))
-                    .setBackground(bgSolid(0xFF000000))
+                    .setBackground(bgSolid(0x00000000))
                     .build()
             )
             .addContent(col.build())
@@ -126,7 +126,7 @@ object TileLayoutBuilder {
             .setModifiers(
                 ModifiersBuilders.Modifiers.Builder()
                     .setClickable(cmdClickable(btn.command, page, pkg))
-                    .setBackground(bgSolid(0xFF404040, CORNER_DP))
+                    .setBackground(bgSolid(0x00000000))
                     .build()
             )
             .addContent(

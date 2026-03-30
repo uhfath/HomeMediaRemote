@@ -160,8 +160,8 @@ private fun RemotePagerContent(
                 0 -> MediaPage(onCmd, onOpenSettings)
                 1 -> SoundPage(isCurrent, onCmd, onOpenSettings)
                 2 -> MicPage(isCurrent, onCmd, onOpenSettings)
-                3 -> ComputerPage(onCmd, onOpenSettings)
-                4 -> ScreenPage(onCmd, onOpenSettings)
+                3 -> ScreenPage(onCmd, onOpenSettings)
+                4 -> ComputerPage(onCmd, onOpenSettings)
             }
         }
 
@@ -188,11 +188,11 @@ private fun RemotePagerContent(
 private fun MediaPage(cmd: (String, String) -> Unit, onSettings: () -> Unit) {
     PageShell(title = "Медиа", onSettings = onSettings) {
         BtnRow {
-            IconBtn(R.drawable.ic_skip_previous, Color.White) { cmd("media/prev",  MediaPrevBody().toJson()) }
+            IconBtn(R.drawable.ic_pause, Color.White)       { cmd("media/pause", MediaPauseBody().toJson()) }
             IconBtn(R.drawable.ic_play_arrow, Color.White)    { cmd("media/play",  MediaPlayBody().toJson()) }
         }
         BtnRow {
-            IconBtn(R.drawable.ic_pause, Color.White)       { cmd("media/pause", MediaPauseBody().toJson()) }
+            IconBtn(R.drawable.ic_skip_previous, Color.White) { cmd("media/prev",  MediaPrevBody().toJson()) }
             IconBtn(R.drawable.ic_skip_next, Color.White)   { cmd("media/next",  MediaNextBody().toJson()) }
         }
     }
@@ -246,12 +246,12 @@ private fun MicPage(isCurrent: Boolean, cmd: (String, String) -> Unit, onSetting
 private fun ComputerPage(cmd: (String, String) -> Unit, onSettings: () -> Unit) {
     PageShell(title = "Компьютер", onSettings = onSettings) {
         BtnRow {
-            IconBtn(R.drawable.ic_lock, Color.White)    { cmd("pc/lock",     PcLockBody().toJson()) }
             IconBtn(R.drawable.ic_bedtime, Color.White) { cmd("pc/sleep",    PcSleepBody().toJson()) }
+            IconBtn(R.drawable.ic_lock, Color.White)    { cmd("pc/lock",     PcLockBody().toJson()) }
         }
         BtnRow {
-            IconBtn(R.drawable.ic_refresh, Color.White)            { cmd("pc/restart",  PcRestartBody().toJson()) }
             IconBtn(R.drawable.ic_power_settings_new, Color.White) { cmd("pc/shutdown", PcShutdownBody().toJson()) }
+            IconBtn(R.drawable.ic_refresh, Color.White)            { cmd("pc/restart",  PcRestartBody().toJson()) }
         }
     }
 }
@@ -264,8 +264,8 @@ private fun ComputerPage(cmd: (String, String) -> Unit, onSettings: () -> Unit) 
 private fun ScreenPage(cmd: (String, String) -> Unit, onSettings: () -> Unit) {
     PageShell(title = "Экран", onSettings = onSettings) {
         BtnRow {
-            IconBtn(R.drawable.ic_brightness_high, Color.White) { cmd("screen/on",  ScreenOnBody().toJson()) }
             IconBtn(R.drawable.ic_dark_mode, Color.White)       { cmd("screen/off", ScreenOffBody().toJson()) }
+            IconBtn(R.drawable.ic_brightness_high, Color.White) { cmd("screen/on",  ScreenOnBody().toJson()) }
         }
     }
 }
@@ -407,7 +407,7 @@ private fun RowScope.IconBtn(@DrawableRes iconRes: Int, tintColor: Color, onClic
             .weight(1f)
             .fillMaxHeight()
             .clip(RoundedCornerShape(14.dp))
-            .background(Color(0xFF404040))
+            .background(Color(0x00000000))
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
