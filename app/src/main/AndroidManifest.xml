@@ -49,7 +49,7 @@
 
         <!-- ── Tiles (плитки) ── -->
 
-        <service android:name=".presentation.tiles.MediaTile"
+        <service android:name=".presentation.MediaTile"
             android:label="Медиа"
             android:exported="true"
             android:permission="com.google.android.wearable.permission.BIND_TILE_PROVIDER">
@@ -61,7 +61,7 @@
                 android:resource="@drawable/tile_preview_media" />
         </service>
 
-        <service android:name=".presentation.tiles.SoundTile"
+        <service android:name=".presentation.SoundTile"
             android:label="Звук"
             android:exported="true"
             android:permission="com.google.android.wearable.permission.BIND_TILE_PROVIDER">
@@ -73,7 +73,7 @@
                 android:resource="@drawable/tile_preview_sound" />
         </service>
 
-        <service android:name=".presentation.tiles.MicTile"
+        <service android:name=".presentation.MicTile"
             android:label="Микрофон"
             android:exported="true"
             android:permission="com.google.android.wearable.permission.BIND_TILE_PROVIDER">
@@ -85,7 +85,7 @@
                 android:resource="@drawable/tile_preview_mic" />
         </service>
 
-        <service android:name=".presentation.tiles.ComputerTile"
+        <service android:name=".presentation.ComputerTile"
             android:label="Компьютер"
             android:exported="true"
             android:permission="com.google.android.wearable.permission.BIND_TILE_PROVIDER">
@@ -97,7 +97,7 @@
                 android:resource="@drawable/tile_preview_computer" />
         </service>
 
-        <service android:name=".presentation.tiles.ScreenTile"
+        <service android:name=".presentation.ScreenTile"
             android:label="Экран"
             android:exported="true"
             android:permission="com.google.android.wearable.permission.BIND_TILE_PROVIDER">

@@ -1,4 +1,4 @@
-package com.example.wearremote.presentation.tiles
+package com.example.wearremote.presentation
 
 import androidx.concurrent.futures.CallbackToFutureAdapter
 import androidx.wear.protolayout.ActionBuilders
