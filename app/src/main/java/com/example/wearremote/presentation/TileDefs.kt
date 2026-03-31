@@ -31,15 +31,15 @@ object TileDefs {
     val SOUND = TilePageDef("sound", 1, "Звук", listOf(
         TileBtnDef(R.drawable.ic_volume_off,  "sound_mute",   "ic_vol_off"),
         TileBtnDef(R.drawable.ic_volume_up,   "sound_unmute", "ic_vol_up"),
-        //TileBtnDef(R.drawable.ic_remove,      "vol_down",     "ic_minus"),
-        //TileBtnDef(R.drawable.ic_add,         "vol_up",       "ic_plus")
+        TileBtnDef(R.drawable.ic_remove,      "vol_down",     "ic_minus"),
+        TileBtnDef(R.drawable.ic_add,         "vol_up",       "ic_plus")
     ))
 
     val MIC = TilePageDef("mic", 2, "Микрофон", listOf(
         TileBtnDef(R.drawable.ic_mic_off, "mic_off",       "ic_mic_off"),
         TileBtnDef(R.drawable.ic_mic,     "mic_on",        "ic_mic"),
-        //TileBtnDef(R.drawable.ic_remove,  "mic_sens_down", "ic_minus2"),
-        //TileBtnDef(R.drawable.ic_add,     "mic_sens_up",   "ic_plus2")
+        TileBtnDef(R.drawable.ic_remove,  "mic_sens_down", "ic_minus2"),
+        TileBtnDef(R.drawable.ic_add,     "mic_sens_up",   "ic_plus2")
     ))
 
     val SCREEN = TilePageDef("screen", 3, "Экран", listOf(

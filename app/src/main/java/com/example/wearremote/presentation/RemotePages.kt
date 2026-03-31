@@ -122,16 +122,24 @@ private fun RemotePagerContent(
         if (autoCommand != null && host.isNotEmpty() && !autoSent) {
             autoSent = true
             val r = CommandSender.send(host, port, auth, autoCommand)
-            if (r.startsWith("OK")) vibrateOk(context) else vibrateErr(context)
-            Toast.makeText(context, r, Toast.LENGTH_SHORT).show()
+            if (r.startsWith("OK")) {
+                vibrateOk(context)
+            } else {
+                Toast.makeText(context, r, Toast.LENGTH_SHORT).show()
+                vibrateErr(context)
+            }
         }
     }
 
     fun cmd(command: String, jsonBody: String = "{}") {
         scope.launch {
             val r = CommandSender.send(host, port, auth, command, jsonBody)
-            if (r.startsWith("OK")) vibrateOk(context) else vibrateErr(context)
-            Toast.makeText(context, r, Toast.LENGTH_SHORT).show()
+            if (r.startsWith("OK")) {
+                vibrateOk(context)
+            } else {
+                Toast.makeText(context, r, Toast.LENGTH_SHORT).show()
+                vibrateErr(context)
+            }
         }
     }
 
@@ -139,19 +147,19 @@ private fun RemotePagerContent(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
-            .pointerInput(Unit) {
-                while (true) {
-                    var totalY = 0f
-                    detectVerticalDragGestures(
-                        onDragStart = { totalY = 0f },
-                        onDragEnd = {
-                            if (totalY < -80f) onOpenSettings()
-                            totalY = 0f
-                        },
-                        onVerticalDrag = { _, dy -> totalY += dy }
-                    )
-                }
-            }
+//            .pointerInput(Unit) {
+//                while (true) {
+//                    var totalY = 0f
+//                    detectVerticalDragGestures(
+//                        onDragStart = { totalY = 0f },
+//                        onDragEnd = {
+//                            if (totalY < -80f) onOpenSettings()
+//                            totalY = 0f
+//                        },
+//                        onVerticalDrag = { _, dy -> totalY += dy }
+//                    )
+//                }
+//            }
     ) {
         HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
             val isCurrent = pagerState.currentPage == page
@@ -205,7 +213,7 @@ private fun MediaPage(cmd: (String, String) -> Unit, onSettings: () -> Unit) {
 @Composable
 private fun SoundPage(isCurrent: Boolean, cmd: (String, String) -> Unit, onSettings: () -> Unit) {
     RotaryPageShell(
-        title = "Звук", hint = "⟳ Безель: громкость",
+        title = "Звук",
         isCurrent = isCurrent,
         onRotaryUp   = { cmd("sound/vol_up",   VolumeUpBody().toJson()) },
         onRotaryDown = { cmd("sound/vol_down", VolumeDownBody().toJson()) },
@@ -214,6 +222,10 @@ private fun SoundPage(isCurrent: Boolean, cmd: (String, String) -> Unit, onSetti
         BtnRow {
             IconBtn(R.drawable.ic_volume_off, Color.White) { cmd("sound/mute",   SoundMuteBody().toJson()) }
             IconBtn(R.drawable.ic_volume_up, Color.White)  { cmd("sound/unmute", SoundUnmuteBody().toJson()) }
+        }
+        BtnRow {
+            IconBtn(R.drawable.ic_remove, Color.White) { cmd("sound/vol_down",  VolumeDownBody().toJson()) }
+            IconBtn(R.drawable.ic_add, Color.White)  { cmd("sound/vol_up",      VolumeUpBody().toJson()) }
         }
     }
 }
@@ -225,7 +237,7 @@ private fun SoundPage(isCurrent: Boolean, cmd: (String, String) -> Unit, onSetti
 @Composable
 private fun MicPage(isCurrent: Boolean, cmd: (String, String) -> Unit, onSettings: () -> Unit) {
     RotaryPageShell(
-        title = "Микрофон", hint = "⟳ Безель: чувствительность",
+        title = "Микрофон",
         isCurrent = isCurrent,
         onRotaryUp   = { cmd("mic/sens_up",   MicSensUpBody().toJson()) },
         onRotaryDown = { cmd("mic/sens_down", MicSensDownBody().toJson()) },
@@ -234,6 +246,10 @@ private fun MicPage(isCurrent: Boolean, cmd: (String, String) -> Unit, onSetting
         BtnRow {
             IconBtn(R.drawable.ic_mic_off, Color.White) { cmd("mic/off", MicOffBody().toJson()) }
             IconBtn(R.drawable.ic_mic, Color.White)     { cmd("mic/on",  MicOnBody().toJson()) }
+        }
+        BtnRow {
+            IconBtn(R.drawable.ic_remove, Color.White) { cmd("mic/sens_down",   MicSensDownBody().toJson()) }
+            IconBtn(R.drawable.ic_add, Color.White)  { cmd("mic/sens_up",       MicSensUpBody().toJson()) }
         }
     }
 }
@@ -317,7 +333,6 @@ private fun PageShell(
 @Composable
 private fun RotaryPageShell(
     title: String,
-    hint: String,
     isCurrent: Boolean,
     onRotaryUp: () -> Unit,
     onRotaryDown: () -> Unit,
@@ -343,9 +358,9 @@ private fun RotaryPageShell(
                 rotaryAccum += event.verticalScrollPixels
                 if (abs(rotaryAccum) >= ROTARY_THRESHOLD) {
                     if (rotaryAccum > 0) {
-                        onRotaryUp(); feedback = "▲"
+                        onRotaryUp(); feedback = "🔼"
                     } else {
-                        onRotaryDown(); feedback = "▼"
+                        onRotaryDown(); feedback = "🔽"
                     }
                     rotaryAccum = 0f
                 }
@@ -363,8 +378,8 @@ private fun RotaryPageShell(
             style = MaterialTheme.typography.title3
         )
         Text(
-            text = if (feedback.isNotEmpty()) feedback else hint,
-            fontSize = 11.sp,
+            text = if (feedback.isNotEmpty()) feedback else "",
+            fontSize = 12.sp,
             color = if (feedback.isNotEmpty()) Color.White else Color.Gray
         )
 
