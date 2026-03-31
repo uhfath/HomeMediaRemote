@@ -9,7 +9,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -43,7 +42,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.rotary.onRotaryScrollEvent
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -147,29 +145,16 @@ private fun RemotePagerContent(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
-//            .pointerInput(Unit) {
-//                while (true) {
-//                    var totalY = 0f
-//                    detectVerticalDragGestures(
-//                        onDragStart = { totalY = 0f },
-//                        onDragEnd = {
-//                            if (totalY < -80f) onOpenSettings()
-//                            totalY = 0f
-//                        },
-//                        onVerticalDrag = { _, dy -> totalY += dy }
-//                    )
-//                }
-//            }
     ) {
         HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
             val isCurrent = pagerState.currentPage == page
             val onCmd: (String, String) -> Unit = { c, b -> cmd(c, b) }
             when (page) {
-                0 -> MediaPage(onCmd, onOpenSettings)
+                0 -> MediaPage(isCurrent, onCmd, onOpenSettings)
                 1 -> SoundPage(isCurrent, onCmd, onOpenSettings)
                 2 -> MicPage(isCurrent, onCmd, onOpenSettings)
-                3 -> ScreenPage(onCmd, onOpenSettings)
-                4 -> ComputerPage(onCmd, onOpenSettings)
+                3 -> ScreenPage(isCurrent, onCmd, onOpenSettings)
+                4 -> ComputerPage(isCurrent, onCmd, onOpenSettings)
             }
         }
 
@@ -193,8 +178,8 @@ private fun RemotePagerContent(
 // ═══════════════════════════════════════════════════════
 
 @Composable
-private fun MediaPage(cmd: (String, String) -> Unit, onSettings: () -> Unit) {
-    PageShell(title = "Медиа", onSettings = onSettings) {
+private fun MediaPage(isCurrent: Boolean, cmd: (String, String) -> Unit, onSettings: () -> Unit) {
+    PageShell(title = "Медиа", isCurrent = isCurrent, onSettings = onSettings) {
         BtnRow {
             IconBtn(R.drawable.ic_pause, Color.White)       { cmd("media/pause", MediaPauseBody().toJson()) }
             IconBtn(R.drawable.ic_play_arrow, Color.White)    { cmd("media/play",  MediaPlayBody().toJson()) }
@@ -259,8 +244,8 @@ private fun MicPage(isCurrent: Boolean, cmd: (String, String) -> Unit, onSetting
 // ═══════════════════════════════════════════════════════
 
 @Composable
-private fun ComputerPage(cmd: (String, String) -> Unit, onSettings: () -> Unit) {
-    PageShell(title = "Компьютер", onSettings = onSettings) {
+private fun ComputerPage(isCurrent: Boolean, cmd: (String, String) -> Unit, onSettings: () -> Unit) {
+    PageShell(title = "Компьютер", isCurrent = isCurrent, onSettings = onSettings) {
         BtnRow {
             IconBtn(R.drawable.ic_bedtime, Color.White) { cmd("pc/sleep",    PcSleepBody().toJson()) }
             IconBtn(R.drawable.ic_lock, Color.White)    { cmd("pc/lock",     PcLockBody().toJson()) }
@@ -277,8 +262,8 @@ private fun ComputerPage(cmd: (String, String) -> Unit, onSettings: () -> Unit) 
 // ═══════════════════════════════════════════════════════
 
 @Composable
-private fun ScreenPage(cmd: (String, String) -> Unit, onSettings: () -> Unit) {
-    PageShell(title = "Экран", onSettings = onSettings) {
+private fun ScreenPage(isCurrent: Boolean, cmd: (String, String) -> Unit, onSettings: () -> Unit) {
+    PageShell(title = "Экран", isCurrent = isCurrent, onSettings = onSettings) {
         BtnRow {
             IconBtn(R.drawable.ic_dark_mode, Color.White)       { cmd("screen/off", ScreenOffBody().toJson()) }
             IconBtn(R.drawable.ic_brightness_high, Color.White) { cmd("screen/on",  ScreenOnBody().toJson()) }
@@ -289,18 +274,30 @@ private fun ScreenPage(cmd: (String, String) -> Unit, onSettings: () -> Unit) {
 // ═══════════════════════════════════════════════════════
 //  Каркас обычной страницы
 //  Заголовок → [кнопки на всё место] → ⚙
+//  Запрашивает фокус и поглощает rotary-события,
+//  чтобы отобрать фокус у rotary-страниц при переходе.
 // ═══════════════════════════════════════════════════════
 
 @Composable
 private fun PageShell(
     title: String,
+    isCurrent: Boolean,
     onSettings: () -> Unit,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(isCurrent) {
+        if (isCurrent) focusRequester.requestFocus()
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black),
+            .background(Color.Black)
+            .onRotaryScrollEvent { true }          // поглощаем без действия
+            .focusRequester(focusRequester)
+            .focusable(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(Modifier.height(10.dp))
@@ -355,6 +352,7 @@ private fun RotaryPageShell(
             .fillMaxSize()
             .background(Color.Black)
             .onRotaryScrollEvent { event ->
+                if (!isCurrent) return@onRotaryScrollEvent true   // не текущая — глушим
                 rotaryAccum += event.verticalScrollPixels
                 if (abs(rotaryAccum) >= ROTARY_THRESHOLD) {
                     if (rotaryAccum > 0) {
