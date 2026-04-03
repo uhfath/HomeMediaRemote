@@ -1,3 +1,4 @@
+using HomeMediaRemote.Audio.Windows;
 using HomeMediaRemote.Host.Commands;
 using HomeMediaRemote.Host.Commands.Media;
 using HomeMediaRemote.Host.Commands.Mic;
@@ -67,6 +68,11 @@ namespace HomeMediaRemote.Host
             builder.Services
                 .AddSingleton<CommandDispatcherCache>()
                 .AddScoped<CommandDispatcher>()
+            ;
+
+            builder.Services
+                .AddScoped<AudioInputController>()
+                .AddScoped<AudioOutputController>()
             ;
 
             foreach (var commandMap in CommandsMap)
