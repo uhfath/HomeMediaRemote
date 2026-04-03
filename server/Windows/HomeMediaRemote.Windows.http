@@ -1,0 +1,6 @@
+@HomeMediaRemote.Windows_HostAddress = http://localhost:5270
+
+GET {{HomeMediaRemote.Windows_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
