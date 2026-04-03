@@ -5,13 +5,13 @@ plugins {
 }
 
 android {
-    namespace = "com.example.wearremote"
+    namespace = "com.step4.homemediaremote"
     compileSdk {
         version = release(36)
     }
 
     defaultConfig {
-        applicationId = "com.example.wearremote"
+        applicationId = "com.step4.homemediaremote"
         minSdk = 35
         targetSdk = 36
         versionCode = 1

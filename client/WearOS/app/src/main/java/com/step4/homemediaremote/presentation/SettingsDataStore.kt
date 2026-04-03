@@ -1,4 +1,4 @@
-package com.example.wearremote.presentation
+package com.step4.homemediaremote.presentation
 
 import android.content.Context
 import androidx.datastore.core.DataStore

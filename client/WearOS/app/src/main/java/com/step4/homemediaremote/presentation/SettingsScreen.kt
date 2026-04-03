@@ -1,4 +1,4 @@
-package com.example.wearremote.presentation
+package com.step4.homemediaremote.presentation
 
 import android.app.Activity
 import android.content.Intent

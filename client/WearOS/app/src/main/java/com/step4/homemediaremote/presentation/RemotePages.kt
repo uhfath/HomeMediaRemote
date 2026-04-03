@@ -1,4 +1,4 @@
-package com.example.wearremote.presentation
+package com.step4.homemediaremote.presentation
 
 import android.content.Context
 import android.os.VibrationEffect
@@ -52,7 +52,7 @@ import androidx.wear.compose.material.HorizontalPageIndicator
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.PageIndicatorState
 import androidx.wear.compose.material.Text
-import com.example.wearremote.R
+import com.step4.homemediaremote.R
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch

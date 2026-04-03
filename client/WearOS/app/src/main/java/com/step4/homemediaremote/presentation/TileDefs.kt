@@ -1,6 +1,6 @@
-package com.example.wearremote.presentation
+package com.step4.homemediaremote.presentation
 
-import com.example.wearremote.R
+import com.step4.homemediaremote.R
 
 // ═══════════════════════════════════════════════════════
 //  Общие определения всех плиток / страниц

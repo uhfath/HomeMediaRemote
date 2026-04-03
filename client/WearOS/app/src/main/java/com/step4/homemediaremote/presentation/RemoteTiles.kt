@@ -1,7 +1,6 @@
-package com.example.wearremote.presentation
+package com.step4.homemediaremote.presentation
 
 import androidx.concurrent.futures.CallbackToFutureAdapter
-import androidx.wear.protolayout.LayoutElementBuilders
 import androidx.wear.protolayout.ResourceBuilders
 import androidx.wear.protolayout.TimelineBuilders
 import androidx.wear.tiles.RequestBuilders

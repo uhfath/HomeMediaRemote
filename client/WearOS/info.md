@@ -98,14 +98,14 @@ implementation("androidx.datastore:datastore-preferences:1.1.2")
 Шаблон уже создал файл `MainActivity.kt`. Найдите его:
 
 ```
-app → java → com.example.wearremote.presentation → MainActivity.kt
+app → java → com.step4.homemediaremote.presentation → MainActivity.kt
 ```
 
-> ⚠️ Обратите внимание на пакет в первой строке файла. Обычно это `com.example.wearremote.presentation`. Если у вас другой пакет — используйте его во всех файлах ниже вместо `com.example.wearremote.presentation`.
+> ⚠️ Обратите внимание на пакет в первой строке файла. Обычно это `com.step4.homemediaremote.presentation`. Если у вас другой пакет — используйте его во всех файлах ниже вместо `com.step4.homemediaremote.presentation`.
 
 В **той же папке** (`presentation`) мы создадим второй файл. Для этого:
 
-1. Нажмите **правой кнопкой** на папку `com.example.wearremote.presentation`
+1. Нажмите **правой кнопкой** на папку `com.step4.homemediaremote.presentation`
 2. Выберите **New → Kotlin Class/File**
 3. Введите имя: `SettingsDataStore`
 4. Выберите тип **File**
@@ -118,7 +118,7 @@ app → java → com.example.wearremote.presentation → MainActivity.kt
 **Полностью замените** содержимое файла `SettingsDataStore.kt` на:
 
 ```kotlin
-package com.example.wearremote.presentation
+package com.step4.homemediaremote.presentation
 
 import android.content.Context
 import androidx.datastore.core.DataStore
@@ -171,7 +171,7 @@ class SettingsDataStore(private val context: Context) {
 **Полностью замените** содержимое файла `MainActivity.kt` на:
 
 ```kotlin
-package com.example.wearremote.presentation
+package com.step4.homemediaremote.presentation
 
 import android.os.Bundle
 import android.widget.Toast
@@ -499,7 +499,7 @@ implementation("com.squareup.okhttp3:okhttp:4.12.0")
 Теперь у нас будет **4 файла** в папке `presentation`:
 
 ```
-com.example.wearremote.presentation/
+com.step4.homemediaremote.presentation/
 ├── MainActivity.kt          ← навигация (изменяем)
 ├── SettingsScreen.kt        ← экран настроек (новый файл)
 ├── RemoteScreen.kt          ← экран пульта (новый файл)
@@ -519,7 +519,7 @@ com.example.wearremote.presentation/
 **Полностью замените** содержимое `SettingsScreen.kt`:
 
 ```kotlin
-package com.example.wearremote.presentation
+package com.step4.homemediaremote.presentation
 
 import android.widget.Toast
 import androidx.compose.foundation.border
@@ -723,7 +723,7 @@ fun LabeledInput(
 **Полностью замените** содержимое `RemoteScreen.kt`:
 
 ```kotlin
-package com.example.wearremote.presentation
+package com.step4.homemediaremote.presentation
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.PaddingValues
@@ -913,7 +913,7 @@ suspend fun sendCommand(
 **Полностью замените** содержимое `MainActivity.kt`:
 
 ```kotlin
-package com.example.wearremote.presentation
+package com.step4.homemediaremote.presentation
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -1099,7 +1099,7 @@ val request = Request.Builder()
 **Полностью замените** содержимое `RemoteScreen.kt`:
 
 ```kotlin
-package com.example.wearremote.presentation
+package com.step4.homemediaremote.presentation
 
 import android.content.Context
 import android.os.VibrationEffect
@@ -1669,7 +1669,7 @@ contentPadding = PaddingValues(
 **Вставьте содержимое:**
 
 ```kotlin
-package com.example.wearremote.presentation
+package com.step4.homemediaremote.presentation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -1846,7 +1846,7 @@ fun KeypadButton(
 Вместо встроенных текстовых полей — тапаемые **Chip** элементы. При нажатии открывается наша клавиатура.
 
 ```kotlin
-package com.example.wearremote.presentation
+package com.step4.homemediaremote.presentation
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.PaddingValues
@@ -2101,7 +2101,7 @@ fun SettingChip(
 ## Замените SettingsScreen.kt целиком
 
 ```kotlin
-package com.example.wearremote.presentation
+package com.step4.homemediaremote.presentation
 
 import android.graphics.drawable.GradientDrawable
 import android.text.InputType
@@ -2355,7 +2355,7 @@ Unresolved reference 'SettingsDataStore'.
 Откройте `SettingsDataStore.kt` и посмотрите первую строку:
 
 ```kotlin
-package com.example.wearremote.presentation   // ← должно быть так
+package com.step4.homemediaremote.presentation   // ← должно быть так
 ```
 
 Если там написано что-то другое (например `package com.example.wearremote` **без** `.presentation`), то есть два варианта:
@@ -2367,7 +2367,7 @@ package com.example.wearremote.presentation   // ← должно быть та�
 Измените первую строку в `SettingsDataStore.kt` чтобы она совпадала с остальными файлами:
 
 ```kotlin
-package com.example.wearremote.presentation
+package com.step4.homemediaremote.presentation
 ```
 
 Затем **перетащите** файл мышкой в ту же папку где лежит `MainActivity.kt` (если он лежит в другой).
@@ -2392,10 +2392,10 @@ import com.example.wearremote.SettingsDataStore
 
 ```
 app/src/main/java/com/example/wearremote/presentation/
-├── MainActivity.kt          ← package com.example.wearremote.presentation
-├── SettingsDataStore.kt     ← package com.example.wearremote.presentation
-├── SettingsScreen.kt        ← package com.example.wearremote.presentation
-└── RemoteScreen.kt          ← package com.example.wearremote.presentation
+├── MainActivity.kt          ← package com.step4.homemediaremote.presentation
+├── SettingsDataStore.kt     ← package com.step4.homemediaremote.presentation
+├── SettingsScreen.kt        ← package com.step4.homemediaremote.presentation
+└── RemoteScreen.kt          ← package com.step4.homemediaremote.presentation
 ```
 
 > 💡 **Горячий совет:** наведите курсор на красное `SettingsDataStore` → нажмите **Alt+Enter** → Android Studio предложит **Import class** — выберите его, и IDE сама добавит правильный import.
@@ -2436,7 +2436,7 @@ app/src/main/java/com/example/wearremote/presentation/
 В папке `presentation` → **New → Kotlin Class/File** → `InputActivity` → тип **File**
 
 ```kotlin
-package com.example.wearremote.presentation
+package com.step4.homemediaremote.presentation
 
 import android.content.Intent
 import android.graphics.Color
@@ -2553,7 +2553,7 @@ class InputActivity : ComponentActivity() {
 ## Шаг 3. Замените SettingsScreen.kt целиком
 
 ```kotlin
-package com.example.wearremote.presentation
+package com.step4.homemediaremote.presentation
 
 import android.app.Activity
 import android.content.Intent
@@ -2926,7 +2926,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 ## 3. Новый файл: CommandSender.kt
 
 ```kotlin
-package com.example.wearremote.presentation
+package com.step4.homemediaremote.presentation
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -2963,7 +2963,7 @@ object CommandSender {
 ## 4. Заменяте целиком: MainActivity.kt
 
 ```kotlin
-package com.example.wearremote.presentation
+package com.step4.homemediaremote.presentation
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -3028,7 +3028,7 @@ fun WearRemoteApp(tileTargetPage: Int = -1) {
 Это самый большой файл — содержит обёртку-пейджер и все 5 экранов.
 
 ```kotlin
-package com.example.wearremote.presentation
+package com.step4.homemediaremote.presentation
 
 import android.content.Context
 import android.os.VibrationEffect
@@ -3420,7 +3420,7 @@ private fun vibrateErr(ctx: Context) {
 Затем **New → Kotlin Class/File** → `RemoteTiles` → тип **File**
 
 ```kotlin
-package com.example.wearremote.presentation.tiles
+package com.step4.homemediaremote.presentation.tiles
 
 import androidx.concurrent.futures.CallbackToFutureAdapter
 import androidx.wear.protolayout.ActionBuilders
@@ -3908,7 +3908,7 @@ fun WearRemoteApp(tileTargetPage: Int = -1, autoCommand: String? = null) {
 Каждая кнопка на плитке → открывает приложение + сразу отправляет команду:
 
 ```kotlin
-package com.example.wearremote.presentation.tiles
+package com.step4.homemediaremote.presentation.tiles
 
 import androidx.concurrent.futures.CallbackToFutureAdapter
 import androidx.wear.protolayout.ActionBuilders
@@ -4213,7 +4213,7 @@ import androidx.compose.ui.graphics.Color
 покажи итоговый SettingsScreen.kt. не получается сделать по твоей инструкции
 
 ```kotlin
-package com.example.wearremote.presentation
+package com.step4.homemediaremote.presentation
 
 import android.app.Activity
 import android.content.Intent
@@ -4455,7 +4455,7 @@ import androidx.compose.ui.graphics.Color
 **Замените `tiles/RemoteTiles.kt` целиком:**
 
 ```kotlin
-package com.example.wearremote.presentation.tiles
+package com.step4.homemediaremote.presentation.tiles
 
 import androidx.concurrent.futures.CallbackToFutureAdapter
 import androidx.wear.protolayout.ActionBuilders
@@ -4701,7 +4701,7 @@ class ScreenTile : BaseRemoteTile() {
 ## Шаг 1. Создайте файл TilePreviewGenerator.kt
 
 ```kotlin
-package com.example.wearremote.presentation
+package com.step4.homemediaremote.presentation
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -4940,7 +4940,7 @@ implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
 ## 2. Замените CommandSender.kt целиком
 
 ```kotlin
-package com.example.wearremote.presentation
+package com.step4.homemediaremote.presentation
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -5009,7 +5009,7 @@ inline fun <reified T> T.toJson(): String = CommandSender.json.encodeToString(th
 Каждая кнопка получает свой класс. Сейчас они пустые — вы сможете добавлять поля когда понадобится.
 
 ```kotlin
-package com.example.wearremote.presentation
+package com.step4.homemediaremote.presentation
 
 import kotlinx.serialization.Serializable
 
