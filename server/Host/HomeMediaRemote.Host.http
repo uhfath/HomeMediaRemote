@@ -1,0 +1,131 @@
+@HomeMediaRemote.Host_HostAddress = http://localhost:5050/api
+
+POST {{HomeMediaRemote.Host_HostAddress}}/media/next
+Accept: application/json
+Content-Type: application/json
+{
+}
+###
+
+POST {{HomeMediaRemote.Host_HostAddress}}/media/pause
+Accept: application/json
+Content-Type: application/json
+{
+}
+###
+
+POST {{HomeMediaRemote.Host_HostAddress}}/media/play
+Accept: application/json
+Content-Type: application/json
+{
+}
+###
+
+POST {{HomeMediaRemote.Host_HostAddress}}/media/prev
+Accept: application/json
+Content-Type: application/json
+{
+}
+###
+
+POST {{HomeMediaRemote.Host_HostAddress}}/mic/off
+Accept: application/json
+Content-Type: application/json
+{
+}
+###
+
+POST {{HomeMediaRemote.Host_HostAddress}}/mic/on
+Accept: application/json
+Content-Type: application/json
+{
+}
+###
+
+POST {{HomeMediaRemote.Host_HostAddress}}/mic/sens_down
+Accept: application/json
+Content-Type: application/json
+{
+  "step": 1
+}
+###
+
+POST {{HomeMediaRemote.Host_HostAddress}}/mic/sens_up
+Accept: application/json
+Content-Type: application/json
+{
+  "step": 1
+}
+###
+
+POST {{HomeMediaRemote.Host_HostAddress}}/pc/lock
+Accept: application/json
+Content-Type: application/json
+{
+}
+###
+
+POST {{HomeMediaRemote.Host_HostAddress}}/pc/restart
+Accept: application/json
+Content-Type: application/json
+{
+}
+###
+
+POST {{HomeMediaRemote.Host_HostAddress}}/pc/shutdown
+Accept: application/json
+Content-Type: application/json
+{
+}
+###
+
+POST {{HomeMediaRemote.Host_HostAddress}}/pc/sleep
+Accept: application/json
+Content-Type: application/json
+{
+}
+###
+
+POST {{HomeMediaRemote.Host_HostAddress}}/screen/off
+Accept: application/json
+Content-Type: application/json
+{
+}
+###
+
+POST {{HomeMediaRemote.Host_HostAddress}}/screen/on
+Accept: application/json
+Content-Type: application/json
+{
+}
+###
+
+POST {{HomeMediaRemote.Host_HostAddress}}/sound/mute
+Accept: application/json
+Content-Type: application/json
+{
+}
+###
+
+POST {{HomeMediaRemote.Host_HostAddress}}/sound/unmute
+Accept: application/json
+Content-Type: application/json
+{
+}
+###
+
+POST {{HomeMediaRemote.Host_HostAddress}}/sound/vol_down
+Accept: application/json
+Content-Type: application/json
+{
+  "step": 1
+}
+###
+
+POST {{HomeMediaRemote.Host_HostAddress}}/sound/vol_up
+Accept: application/json
+Content-Type: application/json
+{
+  "step": 1
+}
+###
