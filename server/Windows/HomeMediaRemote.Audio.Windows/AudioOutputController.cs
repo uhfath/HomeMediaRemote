@@ -8,6 +8,8 @@ namespace HomeMediaRemote.Audio.Windows
 	/// </summary>
 	public sealed class AudioOutputController : IDisposable
 	{
+		private const float VolumeStep = 0.05f;
+
 		private IAudioEndpointVolume _ep;
 
 		public AudioOutputController()
@@ -58,6 +60,24 @@ namespace HomeMediaRemote.Audio.Windows
 					"Допустимый диапазон: 0.0 … 1.0");
 			var ctx = Guid.Empty;
 			Marshal.ThrowExceptionForHR(_ep.SetMasterVolumeLevelScalar(level, ref ctx));
+		}
+
+		/// <summary>
+		/// Увеличить громкость на шаг 'VolumeStep'
+		/// </summary>
+		/// <param name="step">шаг</param>
+		public void SetVolumeUp(int step)
+		{
+			SetVolume(Math.Min(1.0f, GetVolume() + VolumeStep * step));
+		}
+
+		/// <summary>
+		/// Уменьшить громкость на шаг 'VolumeStep'
+		/// </summary>
+		/// <param name="step">шаг</param>
+		public void SetVolumeDown(int step)
+		{
+			SetVolume(Math.Max(0.0f, GetVolume() - VolumeStep * step));
 		}
 
 		// ── Dispose ─────────────────────────────────────────
