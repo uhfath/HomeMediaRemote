@@ -1,6 +1,6 @@
-﻿namespace HomeMediaRemote.Windows.Commands.Media
+﻿namespace HomeMediaRemote.Windows.Commands.Screen
 {
-	internal class MediaPlayCommand : ICommand<MediaPlayCommand.Request>
+	internal class ScreenOnCommand : ICommand<ScreenOnCommand.Request>
 	{
 		private record Request
 		{

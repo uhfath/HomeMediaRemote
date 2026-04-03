@@ -6,11 +6,4 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Folder Include="Commands\Mic\" />
-    <Folder Include="Commands\Pc\" />
-    <Folder Include="Commands\Screen\" />
-    <Folder Include="Commands\Sound\" />
-  </ItemGroup>
-
 </Project>

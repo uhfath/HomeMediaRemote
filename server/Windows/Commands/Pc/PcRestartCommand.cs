@@ -1,6 +1,6 @@
-﻿namespace HomeMediaRemote.Windows.Commands.Media
+﻿namespace HomeMediaRemote.Windows.Commands.Pc
 {
-	internal class MediaPlayCommand : ICommand<MediaPlayCommand.Request>
+	internal class PcRestartCommand : ICommand<PcRestartCommand.Request>
 	{
 		private record Request
 		{

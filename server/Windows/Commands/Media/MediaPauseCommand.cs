@@ -1,17 +1,13 @@
-﻿
-
-namespace HomeMediaRemote.Windows.Commands.Media
+﻿namespace HomeMediaRemote.Windows.Commands.Media
 {
-	internal class MediaPauseCommand : ICommand<MediaPauseCommand.MediaPauseRequest>
+	internal class MediaPauseCommand : ICommand<MediaPauseCommand.Request>
 	{
-		private record MediaPauseRequest
+		private record Request
 		{
-			public int Step { get; init; }
 		}
 
-		Task ICommand<MediaPauseRequest>.ExecuteAsync(MediaPauseRequest request, CancellationToken cancellationToken)
+		Task ICommand<Request>.ExecuteAsync(Request request, CancellationToken cancellationToken)
 		{
-			Console.WriteLine("STEP: {0}", request.Step);
 			return Task.CompletedTask;
 		}
 	}

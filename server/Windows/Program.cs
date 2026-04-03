@@ -1,16 +1,38 @@
 using HomeMediaRemote.Windows.Commands;
 using HomeMediaRemote.Windows.Commands.Media;
+using HomeMediaRemote.Windows.Commands.Mic;
+using HomeMediaRemote.Windows.Commands.Pc;
+using HomeMediaRemote.Windows.Commands.Screen;
+using HomeMediaRemote.Windows.Commands.Sound;
 
 namespace HomeMediaRemote.Windows
 {
     internal class Program
     {
-        private static readonly Dictionary<string, Type> CommandsMap = new(StringComparer.OrdinalIgnoreCase)
+        private static readonly IReadOnlyDictionary<string, Type> CommandsMap = new Dictionary<string, Type>(StringComparer.OrdinalIgnoreCase)
 		{
             { "/media/next", typeof(MediaNextCommand) },
             { "/media/pause", typeof(MediaPauseCommand) },
             { "/media/play", typeof(MediaPlayCommand) },
             { "/media/prev", typeof(MediaPrevCommand) },
+
+            { "/sound/mute", typeof(SoundMuteCommand) },
+            { "/sound/unmute", typeof(SoundUnMuteCommand) },
+            { "/sound/vol_down", typeof(SoundVolDownCommand) },
+            { "/sound/vol_up", typeof(SoundVolUpCommand) },
+
+            { "/mic/off", typeof(MicOffCommand) },
+            { "/mic/on", typeof(MicOnCommand) },
+            { "/mic/sens_down", typeof(MicSensDownCommand) },
+            { "/mic/sens_up", typeof(MicSensUpCommand) },
+
+            { "/pc/sleep", typeof(PcLockCommand) },
+            { "/pc/lock", typeof(PcRestartCommand) },
+            { "/pc/shutdown", typeof(PcShutdownCommand) },
+            { "/pc/restart", typeof(PcSleepCommand) },
+
+            { "/screen/off", typeof(ScreenOffCommand) },
+            { "/screen/on", typeof(ScreenOnCommand) },
         };
 
         private static Type GetCommandInterfaceType(Type commandType)

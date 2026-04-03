@@ -4,6 +4,128 @@ POST {{HomeMediaRemote.Windows_HostAddress}}/media/next
 Accept: application/json
 Content-Type: application/json
 {
+}
+###
 
+POST {{HomeMediaRemote.Windows_HostAddress}}/media/pause
+Accept: application/json
+Content-Type: application/json
+{
+}
+###
+
+POST {{HomeMediaRemote.Windows_HostAddress}}/media/play
+Accept: application/json
+Content-Type: application/json
+{
+}
+###
+
+POST {{HomeMediaRemote.Windows_HostAddress}}/media/prev
+Accept: application/json
+Content-Type: application/json
+{
+}
+###
+
+POST {{HomeMediaRemote.Windows_HostAddress}}/mic/off
+Accept: application/json
+Content-Type: application/json
+{
+}
+###
+
+POST {{HomeMediaRemote.Windows_HostAddress}}/mic/on
+Accept: application/json
+Content-Type: application/json
+{
+}
+###
+
+POST {{HomeMediaRemote.Windows_HostAddress}}/mic/sens_down
+Accept: application/json
+Content-Type: application/json
+{
+  "step": 1
+}
+###
+
+POST {{HomeMediaRemote.Windows_HostAddress}}/mic/sens_up
+Accept: application/json
+Content-Type: application/json
+{
+  "step": 1
+}
+###
+
+POST {{HomeMediaRemote.Windows_HostAddress}}/pc/lock
+Accept: application/json
+Content-Type: application/json
+{
+}
+###
+
+POST {{HomeMediaRemote.Windows_HostAddress}}/pc/restart
+Accept: application/json
+Content-Type: application/json
+{
+}
+###
+
+POST {{HomeMediaRemote.Windows_HostAddress}}/pc/shutdown
+Accept: application/json
+Content-Type: application/json
+{
+}
+###
+
+POST {{HomeMediaRemote.Windows_HostAddress}}/pc/sleep
+Accept: application/json
+Content-Type: application/json
+{
+}
+###
+
+POST {{HomeMediaRemote.Windows_HostAddress}}/screen/off
+Accept: application/json
+Content-Type: application/json
+{
+}
+###
+
+POST {{HomeMediaRemote.Windows_HostAddress}}/screen/on
+Accept: application/json
+Content-Type: application/json
+{
+}
+###
+
+POST {{HomeMediaRemote.Windows_HostAddress}}/sound/mute
+Accept: application/json
+Content-Type: application/json
+{
+}
+###
+
+POST {{HomeMediaRemote.Windows_HostAddress}}/sound/unmute
+Accept: application/json
+Content-Type: application/json
+{
+}
+###
+
+POST {{HomeMediaRemote.Windows_HostAddress}}/sound/vol_down
+Accept: application/json
+Content-Type: application/json
+{
+  "step": 1
+}
+###
+
+POST {{HomeMediaRemote.Windows_HostAddress}}/sound/vol_up
+Accept: application/json
+Content-Type: application/json
+{
+  "step": 1
 }
 ###

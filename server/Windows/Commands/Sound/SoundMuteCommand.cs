@@ -1,6 +1,6 @@
-﻿namespace HomeMediaRemote.Windows.Commands.Media
+﻿namespace HomeMediaRemote.Windows.Commands.Sound
 {
-	internal class MediaPlayCommand : ICommand<MediaPlayCommand.Request>
+	internal class SoundMuteCommand : ICommand<SoundMuteCommand.Request>
 	{
 		private record Request
 		{

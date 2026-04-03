@@ -1,6 +1,6 @@
-﻿namespace HomeMediaRemote.Windows.Commands.Media
+﻿namespace HomeMediaRemote.Windows.Commands.Mic
 {
-	internal class MediaPlayCommand : ICommand<MediaPlayCommand.Request>
+	internal class MicOnCommand : ICommand<MicOnCommand.Request>
 	{
 		private record Request
 		{
