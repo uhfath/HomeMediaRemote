@@ -64,7 +64,10 @@ namespace HomeMediaRemote.Windows
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddScoped<CommandDispatcher>();
+            builder.Services
+                .AddSingleton<CommandDispatcherCache>()
+                .AddScoped<CommandDispatcher>()
+            ;
 
             foreach (var commandMap in CommandsMap)
             {
@@ -87,7 +90,7 @@ namespace HomeMediaRemote.Windows
 				{
                     var requestType = GetCommandRequestType(commandMap.Value);
                     var request = await httpRequest.ReadFromJsonAsync(requestType, cancellationToken) ?? throw new InvalidOperationException("Пустой запрос для исполнения.");
-					await commandDispatcher.ExecuteAsync(request, cancellationToken);
+					await commandDispatcher.ExecuteAsync(commandMap.Key, request, cancellationToken);
 				});
 			}
 

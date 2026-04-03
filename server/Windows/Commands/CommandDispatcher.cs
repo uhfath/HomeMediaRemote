@@ -2,22 +2,22 @@
 {
 	internal class CommandDispatcher
 	{
+		private readonly CommandDispatcherCache _commandDispatcherCache;
 		private readonly IServiceProvider _serviceProvider;
 
 		public CommandDispatcher(
+			CommandDispatcherCache commandDispatcherCache,
 			IServiceProvider serviceProvider)
 		{
+			this._commandDispatcherCache = commandDispatcherCache;
 			this._serviceProvider = serviceProvider;
 		}
 
-		public async Task ExecuteAsync(object request, CancellationToken cancellationToken = default)
+		public async Task ExecuteAsync(string commandType, object request, CancellationToken cancellationToken = default)
 		{
-			var requestType = request.GetType();
-			var commandType = typeof(ICommand<>).MakeGenericType(requestType);
-			var executeMethod = commandType.GetMethod(nameof(ICommand<object>.ExecuteAsync));
-
-			var command = _serviceProvider.GetRequiredService(commandType);
-			var result = executeMethod!.Invoke(command, [request, cancellationToken]);
+			var commandEntry = _commandDispatcherCache.GetOrCreateCommand(commandType, request);
+			var command = _serviceProvider.GetRequiredService(commandEntry.CommandType);
+			var result = commandEntry.CommandMethod.Invoke(command, [request, cancellationToken]);
 
 			if (result is Task taskResult)
 			{
