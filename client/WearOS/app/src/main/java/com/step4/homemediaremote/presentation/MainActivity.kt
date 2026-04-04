@@ -1,7 +1,10 @@
 package com.step4.homemediaremote.presentation
 
+import android.app.Activity                          // ← NEW
+import android.content.Intent                        // ← NEW
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler         // ← NEW
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -21,15 +24,19 @@ import androidx.compose.ui.graphics.Color
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        //TilePreviewGenerator.generate(this)
         val tileTargetPage = intent.getIntExtra("open_page", -1)
-        val autoCommand = intent.getStringExtra("auto_cmd")    // ← NEW
+        val autoCommand = intent.getStringExtra("auto_cmd")
         setContent {
             MaterialTheme {
-                WearRemoteApp(tileTargetPage, autoCommand)      // ← NEW
+                WearRemoteApp(tileTargetPage, autoCommand)
             }
         }
     }
+
+    override fun onNewIntent(intent: Intent) {       // ← NEW
+        super.onNewIntent(intent)                     // ← NEW
+        setIntent(intent)                             // ← NEW
+    }                                                 // ← NEW
 }
 
 @Composable
@@ -37,6 +44,11 @@ fun WearRemoteApp(tileTargetPage: Int = -1, autoCommand: String? = null) {
     val context = LocalContext.current
     val dataStore = remember { SettingsDataStore(context) }
     var screen by remember { mutableStateOf<String?>(null) }
+
+    // ── Назад = выход ВСЕГДА ──                    // ← NEW
+    BackHandler {                                     // ← NEW
+        (context as? Activity)?.finish()              // ← NEW
+    }                                                 // ← NEW
 
     LaunchedEffect(Unit) {
         val host = dataStore.host.first()
@@ -58,4 +70,3 @@ fun WearRemoteApp(tileTargetPage: Int = -1, autoCommand: String? = null) {
         }
     }
 }
-
