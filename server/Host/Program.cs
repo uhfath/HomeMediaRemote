@@ -3,7 +3,6 @@ using HomeMediaRemote.Host.Commands;
 using HomeMediaRemote.Host.Commands.Media;
 using HomeMediaRemote.Host.Commands.Mic;
 using HomeMediaRemote.Host.Commands.Pc;
-using HomeMediaRemote.Host.Commands.Screen;
 using HomeMediaRemote.Host.Commands.Sound;
 
 namespace HomeMediaRemote.Host
@@ -17,23 +16,20 @@ namespace HomeMediaRemote.Host
             { "/media/play", typeof(MediaPlayCommand) },
             { "/media/prev", typeof(MediaPrevCommand) },
 
-            { "/sound/mute", typeof(SoundMuteCommand) },
+			{ "/mic/off", typeof(MicOffCommand) },
+			{ "/mic/on", typeof(MicOnCommand) },
+			{ "/mic/sens_down", typeof(MicSensDownCommand) },
+			{ "/mic/sens_up", typeof(MicSensUpCommand) },
+
+			{ "/pc/lock", typeof(PcLockCommand) },
+			{ "/pc/restart", typeof(PcRestartCommand) },
+			{ "/pc/shutdown", typeof(PcShutdownCommand) },
+			{ "/pc/sleep", typeof(PcSleepCommand) },
+
+			{ "/sound/mute", typeof(SoundMuteCommand) },
             { "/sound/unmute", typeof(SoundUnMuteCommand) },
             { "/sound/vol_down", typeof(SoundVolDownCommand) },
             { "/sound/vol_up", typeof(SoundVolUpCommand) },
-
-            { "/mic/off", typeof(MicOffCommand) },
-            { "/mic/on", typeof(MicOnCommand) },
-            { "/mic/sens_down", typeof(MicSensDownCommand) },
-            { "/mic/sens_up", typeof(MicSensUpCommand) },
-
-            { "/pc/sleep", typeof(PcLockCommand) },
-            { "/pc/lock", typeof(PcRestartCommand) },
-            { "/pc/shutdown", typeof(PcShutdownCommand) },
-            { "/pc/restart", typeof(PcSleepCommand) },
-
-            { "/screen/off", typeof(ScreenOffCommand) },
-            { "/screen/on", typeof(ScreenOnCommand) },
         };
 
         private static Type GetCommandInterfaceType(Type commandType)
