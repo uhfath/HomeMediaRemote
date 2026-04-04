@@ -51,4 +51,3 @@ class MediaTile    : BaseRemoteTile() { override val def = TileDefs.MEDIA    }
 class SoundTile    : BaseRemoteTile() { override val def = TileDefs.SOUND    }
 class MicTile      : BaseRemoteTile() { override val def = TileDefs.MIC      }
 class ComputerTile : BaseRemoteTile() { override val def = TileDefs.COMPUTER }
-class ScreenTile   : BaseRemoteTile() { override val def = TileDefs.SCREEN   }

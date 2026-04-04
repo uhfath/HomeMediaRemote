@@ -42,11 +42,6 @@ object TileDefs {
         TileBtnDef(R.drawable.ic_add,     "mic_sens_up",   "ic_plus2")
     ))
 
-    val SCREEN = TilePageDef("screen", 3, "Экран", listOf(
-        TileBtnDef(R.drawable.ic_dark_mode,       "screen_off", "ic_dark"),
-        TileBtnDef(R.drawable.ic_brightness_high, "screen_on",  "ic_bright"),
-    ))
-
     val COMPUTER = TilePageDef("computer", 4, "Компьютер", listOf(
         TileBtnDef(R.drawable.ic_bedtime,            "pc_sleep",    "ic_sleep"),
         TileBtnDef(R.drawable.ic_lock,               "pc_lock",     "ic_lock"),
@@ -54,5 +49,5 @@ object TileDefs {
         TileBtnDef(R.drawable.ic_refresh,            "pc_restart",  "ic_restart"),
     ))
 
-    val ALL = listOf(MEDIA, SOUND, MIC, COMPUTER, SCREEN)
+    val ALL = listOf(MEDIA, SOUND, MIC, COMPUTER)
 }

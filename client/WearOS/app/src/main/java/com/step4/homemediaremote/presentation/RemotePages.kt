@@ -62,7 +62,7 @@ import kotlin.math.abs
 //  Константы
 // ═══════════════════════════════════════════════════════
 
-const val PAGE_COUNT = 5
+const val PAGE_COUNT = 4
 private const val ROTARY_THRESHOLD = 30f
 
 // ═══════════════════════════════════════════════════════
@@ -153,8 +153,7 @@ private fun RemotePagerContent(
                 0 -> MediaPage(isCurrent, onCmd, onOpenSettings)
                 1 -> SoundPage(isCurrent, onCmd, onOpenSettings)
                 2 -> MicPage(isCurrent, onCmd, onOpenSettings)
-                3 -> ScreenPage(isCurrent, onCmd, onOpenSettings)
-                4 -> ComputerPage(isCurrent, onCmd, onOpenSettings)
+                3 -> ComputerPage(isCurrent, onCmd, onOpenSettings)
             }
         }
 
@@ -253,20 +252,6 @@ private fun ComputerPage(isCurrent: Boolean, cmd: (String, String) -> Unit, onSe
         BtnRow {
             IconBtn(R.drawable.ic_power_settings_new, Color.White) { cmd("pc/shutdown", PcShutdownBody().toJson()) }
             IconBtn(R.drawable.ic_refresh, Color.White)            { cmd("pc/restart",  PcRestartBody().toJson()) }
-        }
-    }
-}
-
-// ═══════════════════════════════════════════════════════
-//  Страница 4 — Экран
-// ═══════════════════════════════════════════════════════
-
-@Composable
-private fun ScreenPage(isCurrent: Boolean, cmd: (String, String) -> Unit, onSettings: () -> Unit) {
-    PageShell(title = "Экран", isCurrent = isCurrent, onSettings = onSettings) {
-        BtnRow {
-            IconBtn(R.drawable.ic_dark_mode, Color.White)       { cmd("screen/off", ScreenOffBody().toJson()) }
-            IconBtn(R.drawable.ic_brightness_high, Color.White) { cmd("screen/on",  ScreenOnBody().toJson()) }
         }
     }
 }

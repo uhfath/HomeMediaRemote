@@ -25,7 +25,3 @@ import kotlinx.serialization.Serializable
 @Serializable class PcSleepBody
 @Serializable class PcRestartBody(val force: Boolean = false)
 @Serializable class PcShutdownBody(val force: Boolean = false)
-
-// ── Экран ──
-@Serializable class ScreenOnBody
-@Serializable class ScreenOffBody
