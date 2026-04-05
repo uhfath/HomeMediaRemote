@@ -8,12 +8,17 @@ using HomeMediaRemote.Host.States;
 using HomeMediaRemote.Media.Windows;
 using HomeMediaRemote.Pc.Windows;
 using HomeMediaRemote.Status.Windows;
+using System.Runtime.InteropServices;
 
 namespace HomeMediaRemote.Host
 {
     internal class Program
     {
-        private static readonly IReadOnlyDictionary<string, Type> CommandsMap = new Dictionary<string, Type>(StringComparer.OrdinalIgnoreCase)
+		[DllImport("kernel32.dll", SetLastError = true)]
+		static extern bool AttachConsole(int dwProcessId);
+		private const int ATTACH_PARENT_PROCESS = -1;
+
+		private static readonly IReadOnlyDictionary<string, Type> CommandsMap = new Dictionary<string, Type>(StringComparer.OrdinalIgnoreCase)
 		{
             { "/media/next", typeof(MediaNextCommand) },
             { "/media/pause", typeof(MediaPauseCommand) },
@@ -64,6 +69,11 @@ namespace HomeMediaRemote.Host
 		private static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            if (builder.Environment.IsDevelopment())
+            {
+                AttachConsole(ATTACH_PARENT_PROCESS);
+            }
 
             builder.Services
                 .AddSingleton<CommandDispatcherCache>()
