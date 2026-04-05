@@ -29,5 +29,31 @@
 			//	await valueTaskResult;
 			//}
 		}
+
+		public static Type GetCommandInterfaceType(Type commandType)
+		{
+			var commandInterfaceType = commandType
+				.GetInterfaces()
+				.Where(i => i.IsGenericType)
+				.Where(i => i.GetGenericTypeDefinition() == typeof(ICommand<>))
+				.FirstOrDefault()
+			;
+
+			if (commandInterfaceType == null)
+			{
+				throw new InvalidOperationException($"Команда '{commandType.FullName}' не реализует интерфейс 'ICommand<T>'.");
+			}
+
+			return commandInterfaceType;
+		}
+
+		public static Type GetCommandRequestType(Type commandType)
+		{
+			var commandInterfaceType = GetCommandInterfaceType(commandType);
+			var requestType = commandInterfaceType.GetGenericArguments()[0];
+
+			return requestType;
+		}
+
 	}
 }

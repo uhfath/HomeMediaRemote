@@ -1,9 +1,6 @@
 using HomeMediaRemote.Audio.Windows;
 using HomeMediaRemote.Host.Commands;
-using HomeMediaRemote.Host.Commands.Media;
-using HomeMediaRemote.Host.Commands.Mic;
-using HomeMediaRemote.Host.Commands.Pc;
-using HomeMediaRemote.Host.Commands.Sound;
+using HomeMediaRemote.Host.Services;
 using HomeMediaRemote.Host.States;
 using HomeMediaRemote.Media.Windows;
 using HomeMediaRemote.Pc.Windows;
@@ -16,66 +13,83 @@ namespace HomeMediaRemote.Host
     {
 		[DllImport("kernel32.dll", SetLastError = true)]
 		static extern bool AttachConsole(int dwProcessId);
+
+		[DllImport("kernel32.dll", SetLastError = true)]
+		static extern bool AllocConsole();
+
 		private const int ATTACH_PARENT_PROCESS = -1;
 
-		private static readonly IReadOnlyDictionary<string, Type> CommandsMap = new Dictionary<string, Type>(StringComparer.OrdinalIgnoreCase)
-		{
-            { "/media/next", typeof(MediaNextCommand) },
-            { "/media/pause", typeof(MediaPauseCommand) },
-            { "/media/play", typeof(MediaPlayCommand) },
-            { "/media/prev", typeof(MediaPrevCommand) },
-
-			{ "/mic/off", typeof(MicOffCommand) },
-			{ "/mic/on", typeof(MicOnCommand) },
-			{ "/mic/sens_down", typeof(MicSensDownCommand) },
-			{ "/mic/sens_up", typeof(MicSensUpCommand) },
-
-			{ "/pc/lock", typeof(PcLockCommand) },
-			{ "/pc/restart", typeof(PcRestartCommand) },
-			{ "/pc/shutdown", typeof(PcShutdownCommand) },
-			{ "/pc/sleep", typeof(PcSleepCommand) },
-
-			{ "/sound/mute", typeof(SoundMuteCommand) },
-            { "/sound/unmute", typeof(SoundUnMuteCommand) },
-            { "/sound/vol_down", typeof(SoundVolDownCommand) },
-            { "/sound/vol_up", typeof(SoundVolUpCommand) },
-        };
-
-        private static Type GetCommandInterfaceType(Type commandType)
+        private static bool ProcessCommandLine(string[] args)
         {
-            var commandInterfaceType = commandType
-                .GetInterfaces()
-                .Where(i => i.IsGenericType)
-                .Where(i => i.GetGenericTypeDefinition() == typeof(ICommand<>))
-                .FirstOrDefault()
-            ;
+			var argsDict = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
 
-            if (commandInterfaceType == null)
+			for (var i = 0; i < args.Length; i++)
+			{
+				if (args[i].StartsWith('-'))
+				{
+					var key = args[i].TrimStart('-');
+					var value = (string?)null;
+
+					// Если следующий аргумент не начинается с '-', считаем его значением
+					if (i + 1 < args.Length && !args[i + 1].StartsWith('-'))
+					{
+						value = args[++i];
+					}
+
+					argsDict[key] = value;
+				}
+			}
+
+            if (argsDict.ContainsKey("help") || argsDict.ContainsKey("h") || argsDict.ContainsKey("?"))
             {
-                throw new InvalidOperationException($"Команда '{commandType.FullName}' не реализует интерфейс 'ICommand<T>'.");
+				Console.WriteLine();
+				Console.WriteLine("Parameter: 'command'");
+				var commands = string.Join(", ", FileBackendService.FileNames.Select(c => $"'{c}'"));
+				Console.WriteLine("Commands: {0}", commands);
+
+				return true;
             }
 
-            return commandInterfaceType;
-        }
+			if (argsDict.TryGetValue("command", out var command))
+            {
+				if (command is not null)
+				{
+					if (!FileBackendService.CreateFileCommand(command))
+					{
+						Console.Error.WriteLine("Unknown command.");
+					}
+				}
+				else
+				{
+					Console.Error.WriteLine("Empty command.");
+				}
 
-        private static Type GetCommandRequestType(Type commandType)
-        {
-            var commandInterfaceType = GetCommandInterfaceType(commandType);
-			var requestType = commandInterfaceType.GetGenericArguments()[0];
+				return true;
+			}
 
-            return requestType;
+			return false;
 		}
 
 		private static void Main(string[] args)
         {
-            var builder = WebApplication.CreateBuilder(args);
+			var isDevelopment = string.Equals(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"), "Development", StringComparison.OrdinalIgnoreCase);
+			if (isDevelopment && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+			{
+				if (!AttachConsole(ATTACH_PARENT_PROCESS))
+				{
+					// Если не удалось прикрепить (например, запущено не из CMD), создаём новую
+					AllocConsole();
+				}
+			}
 
-            if (builder.Environment.IsDevelopment())
-            {
-                AttachConsole(ATTACH_PARENT_PROCESS);
-            }
+			if (ProcessCommandLine(args))
+			{
+				return;
+			}
 
-            builder.Services
+			var builder = WebApplication.CreateBuilder(args);
+
+			builder.Services
                 .AddSingleton<CommandDispatcherCache>()
                 .AddScoped<CommandDispatcher>()
                 .AddHostedService<MicState>()
@@ -89,30 +103,15 @@ namespace HomeMediaRemote.Host
                 .AddStatusServices()
             ;
 
-            foreach (var commandMap in CommandsMap)
-            {
-                builder.Services.AddTransient(GetCommandInterfaceType(commandMap.Value), commandMap.Value);
-            }
+			HttpBackendService.AddHttpBackendServices(builder.Services);
+			FileBackendService.AddFileBackendServices(builder.Services);
 
             builder.Services.AddAuthorization();
 
             var app = builder.Build();
             app.UseAuthorization();
 
-            var groupBuilder = app.MapGroup("/api");
-
-            foreach (var commandMap in CommandsMap)
-            {
-				groupBuilder.MapPost(commandMap.Key, async (
-                    CommandDispatcher commandDispatcher,
-                    HttpRequest httpRequest,
-                    CancellationToken cancellationToken) =>
-				{
-                    var requestType = GetCommandRequestType(commandMap.Value);
-                    var request = await httpRequest.ReadFromJsonAsync(requestType, cancellationToken) ?? throw new InvalidOperationException("Пустой запрос для исполнения.");
-					commandDispatcher.Execute(commandMap.Key, request);
-				});
-			}
+			HttpBackendService.UseHttpBackendServices(app);
 
 			app.Run();
         }
