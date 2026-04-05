@@ -4,8 +4,9 @@ namespace HomeMediaRemote.Host.Commands.Sound
 {
 	internal class SoundVolDownCommand : ICommand<SoundVolDownCommand.Request>
 	{
-		private record Request
+		public record Request
 		{
+			public static readonly Request Empty = new();
 			public int Step { get; init; }
 		}
 
@@ -17,10 +18,9 @@ namespace HomeMediaRemote.Host.Commands.Sound
 			this._audioOutputController = audioOutputController;
 		}
 
-		Task ICommand<Request>.ExecuteAsync(Request request, CancellationToken cancellationToken)
+		void ICommand<Request>.Execute(Request request)
 		{
 			_audioOutputController.SetVolumeDown(request.Step);
-			return Task.CompletedTask;
 		}
 	}
 }

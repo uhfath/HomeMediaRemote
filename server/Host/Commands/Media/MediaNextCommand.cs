@@ -4,12 +4,14 @@ namespace HomeMediaRemote.Host.Commands.Media
 {
 	internal class MediaNextCommand : ICommand<MediaNextCommand.Request>
 	{
-		private record Request();
+		public record Request
+		{
+			public static readonly Request Empty = new();
+		}
 
-		Task ICommand<Request>.ExecuteAsync(Request request, CancellationToken cancellationToken)
+		void ICommand<Request>.Execute(Request request)
 		{
 			MediaController.NextTrack();
-			return Task.CompletedTask;
 		}
 	}
 }

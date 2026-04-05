@@ -9,6 +9,8 @@ namespace HomeMediaRemote.Status.Windows
 			services
 				.AddSingleton<ScreenOverlayManager>()
 				.AddSingleton<IconManager>()
+				.AddSingleton<FormManager>()
+				.AddSingleton<TrayIconManager>()
 				.AddTransient<IconStatusManager>()
 			;
 

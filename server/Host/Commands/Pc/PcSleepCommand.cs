@@ -4,9 +4,12 @@ namespace HomeMediaRemote.Host.Commands.Pc
 {
 	internal class PcSleepCommand : ICommand<PcSleepCommand.Request>
 	{
-		private readonly ILogger<PcSleepCommand> _logger;
+		public record Request
+		{
+			public static readonly Request Empty = new();
+		}
 
-		private record Request();
+		public readonly ILogger<PcSleepCommand> _logger;
 
 		public PcSleepCommand(
 			ILogger<PcSleepCommand> logger)
@@ -14,10 +17,9 @@ namespace HomeMediaRemote.Host.Commands.Pc
 			this._logger = logger;
 		}
 
-		Task ICommand<Request>.ExecuteAsync(Request request, CancellationToken cancellationToken)
+		void ICommand<Request>.Execute(Request request)
 		{
 			CommandScheduler.ScheduleAction(() => SleepManager.Sleep(), TimeSpan.FromSeconds(3), _logger);
-			return Task.CompletedTask;
 		}
 	}
 }

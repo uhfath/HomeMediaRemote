@@ -4,8 +4,9 @@ namespace HomeMediaRemote.Host.Commands.Mic
 {
 	internal class MicSensDownCommand : ICommand<MicSensDownCommand.Request>
 	{
-		private record Request
+		public record Request
 		{
+			public static readonly Request Empty = new();
 			public int Step { get; init; }
 		}
 
@@ -17,10 +18,9 @@ namespace HomeMediaRemote.Host.Commands.Mic
 			this._audioInputController = audioInputController;
 		}
 
-		Task ICommand<Request>.ExecuteAsync(Request request, CancellationToken cancellationToken)
+		void ICommand<Request>.Execute(Request request)
 		{
 			_audioInputController.SetVolumeDown(request.Step);
-			return Task.CompletedTask;
 		}
 	}
 }

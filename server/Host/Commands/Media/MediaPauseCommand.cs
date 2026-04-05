@@ -4,12 +4,14 @@ namespace HomeMediaRemote.Host.Commands.Media
 {
 	internal class MediaPauseCommand : ICommand<MediaPauseCommand.Request>
 	{
-		private record Request();
+		public record Request
+		{
+			public static readonly Request Empty = new();
+		}
 
-		Task ICommand<Request>.ExecuteAsync(Request request, CancellationToken cancellationToken)
+		void ICommand<Request>.Execute(Request request)
 		{
 			MediaController.Pause();
-			return Task.CompletedTask;
 		}
 	}
 }

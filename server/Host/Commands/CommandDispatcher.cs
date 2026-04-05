@@ -13,21 +13,21 @@
 			this._serviceProvider = serviceProvider;
 		}
 
-		public async Task ExecuteAsync(string commandType, object request, CancellationToken cancellationToken = default)
+		public void Execute(string commandType, object request)
 		{
 			var commandEntry = _commandDispatcherCache.GetCommand(commandType, request);
 			var command = _serviceProvider.GetRequiredService(commandEntry.CommandType);
-			var result = commandEntry.CommandMethod.Invoke(command, [request, cancellationToken]);
+			var result = commandEntry.CommandMethod.Invoke(command, [request]);
 
-			if (result is Task taskResult)
-			{
-				await taskResult;
-			}
+			//if (result is Task taskResult)
+			//{
+			//	await taskResult;
+			//}
 
-			if (result is ValueTask valueTaskResult)
-			{
-				await valueTaskResult;
-			}
+			//if (result is ValueTask valueTaskResult)
+			//{
+			//	await valueTaskResult;
+			//}
 		}
 	}
 }

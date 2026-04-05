@@ -7,8 +7,8 @@ namespace HomeMediaRemote.Audio.Windows
 		public static IServiceCollection AddAudioServices(this IServiceCollection services)
 		{
 			services
-				.AddScoped<AudioInputController>()
-				.AddScoped<AudioOutputController>()
+				.AddSingleton<AudioInputController>()
+				.AddSingleton<AudioOutputController>()
 			;
 
 			return services;

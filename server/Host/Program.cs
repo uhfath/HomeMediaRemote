@@ -97,7 +97,7 @@ namespace HomeMediaRemote.Host
 				{
                     var requestType = GetCommandRequestType(commandMap.Value);
                     var request = await httpRequest.ReadFromJsonAsync(requestType, cancellationToken) ?? throw new InvalidOperationException("Пустой запрос для исполнения.");
-					await commandDispatcher.ExecuteAsync(commandMap.Key, request, cancellationToken);
+					commandDispatcher.Execute(commandMap.Key, request);
 				});
 			}
 

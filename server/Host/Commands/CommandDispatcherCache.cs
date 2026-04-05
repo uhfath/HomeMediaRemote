@@ -11,7 +11,7 @@ namespace HomeMediaRemote.Host.Commands
 		{
 			var requestType = request.GetType();
 			var commandType = typeof(ICommand<>).MakeGenericType(requestType);
-			var executeMethod = commandType.GetMethod(nameof(ICommand<object>.ExecuteAsync));
+			var executeMethod = commandType.GetMethod(nameof(ICommand<object>.Execute));
 			return new CommandEntry(commandType, executeMethod!);
 		}
 

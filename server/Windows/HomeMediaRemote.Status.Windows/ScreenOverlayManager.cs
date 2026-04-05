@@ -8,8 +8,7 @@ namespace HomeMediaRemote.Status.Windows
 
 		private readonly ConcurrentDictionary<string, IReadOnlyList<ScreenOverlay>> _screenOverlays = new();
 		private readonly List<GridLayout> _screenGrids = new();
-
-		private Form _marshalForm = null!;
+		private readonly FormManager _formManager;
 		private bool _isDisposed;
 
 		protected virtual void Dispose(bool disposing)
@@ -22,11 +21,10 @@ namespace HomeMediaRemote.Status.Windows
 					{
 						foreach(var overlay in overlays)
 						{
-							_marshalForm.Invoke(overlay.Dispose);
+							_formManager.Invoke(overlay.Dispose);
 						}
 					}
 
-					_marshalForm.Invoke(Application.ExitThread);
 				}
 
 				_isDisposed = true;
@@ -39,47 +37,22 @@ namespace HomeMediaRemote.Status.Windows
 			foreach (var grid in _screenGrids)
 			{
 				var location = grid.GetNextTileLocation(bitmap.Size);
-				var overlay = _marshalForm.Invoke(() => new ScreenOverlay(bitmap, location));
-				grid.AddTile(key, bitmap.Size, p => _marshalForm.Invoke(() => overlay.MoveTo(p)));
+				var overlay = _formManager.Invoke(() => new ScreenOverlay(bitmap, location));
+				grid.AddTile(key, bitmap.Size, p => _formManager.Invoke(() => overlay.MoveTo(p)));
 				overlays.Add(overlay);
 			}
 
 			return overlays;
 		}
 
-		public ScreenOverlayManager()
+		public ScreenOverlayManager(
+			FormManager formManager)
 		{
-			var isFormReady = new ManualResetEventSlim();
-
-			var uiThread = new Thread(() =>
-			{
-				Application.EnableVisualStyles();
-				Application.SetCompatibleTextRenderingDefault(false);
-
-				// Невидимая форма — единственная цель: иметь HWND,
-				// через который Invoke перебрасывает делегаты в этот поток.
-				_marshalForm = new Form
-				{
-					FormBorderStyle = FormBorderStyle.None,
-					ShowInTaskbar = false,
-					Size = Size.Empty
-				};
-				
-				_ = _marshalForm.Handle;
-				isFormReady.Set();
-
-				Application.Run();
-			});
-
-			uiThread.SetApartmentState(ApartmentState.STA); // WinForms требует STA
-			uiThread.IsBackground = true;
-			uiThread.Start();
+			this._formManager = formManager;
 
 			_screenGrids.AddRange(Screen.AllScreens
 				.Select(s => new GridLayout(s.Bounds, new Point(OverlaySpacing, OverlaySpacing)))
 			);
-
-			isFormReady.Wait(); // ждём, пока HWND готов
 		}
 
 		public void AddScreenOverlay(string key, Bitmap bitmap)
@@ -93,7 +66,7 @@ namespace HomeMediaRemote.Status.Windows
 			{
 				foreach (var overlay in overlays)
 				{
-					_marshalForm.Invoke(overlay.Dispose);
+					_formManager.Invoke(overlay.Dispose);
 				}
 
 				foreach (var grid in _screenGrids)

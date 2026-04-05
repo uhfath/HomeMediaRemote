@@ -5,7 +5,10 @@ namespace HomeMediaRemote.Host.Commands.Sound
 {
 	internal class SoundUnMuteCommand : ICommand<SoundUnMuteCommand.Request>
 	{
-		private record Request();
+		public record Request
+		{
+			public static readonly Request Empty = new();
+		}
 
 		private readonly AudioOutputController _audioOutputController;
 		private readonly IconStatusManager _iconStatusManager;
@@ -18,11 +21,10 @@ namespace HomeMediaRemote.Host.Commands.Sound
 			this._iconStatusManager = iconStatusManager;
 		}
 
-		Task ICommand<Request>.ExecuteAsync(Request request, CancellationToken cancellationToken)
+		void ICommand<Request>.Execute(Request request)
 		{
 			_audioOutputController.SetMute(false);
 			_iconStatusManager.HideNoSoundStatus();
-			return Task.CompletedTask;
 		}
 	}
 }

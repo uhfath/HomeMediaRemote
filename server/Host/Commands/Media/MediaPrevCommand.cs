@@ -2,14 +2,16 @@
 
 namespace HomeMediaRemote.Host.Commands.Media
 {
-	internal class MediaPrevCommand : ICommand<MediaPrevCommand.MediaPrevRequest>
+	internal class MediaPrevCommand : ICommand<MediaPrevCommand.Request>
 	{
-		private record MediaPrevRequest();
+		public record Request
+		{
+			public static readonly Request Empty = new();
+		}
 
-		Task ICommand<MediaPrevRequest>.ExecuteAsync(MediaPrevRequest request, CancellationToken cancellationToken)
+		void ICommand<Request>.Execute(Request request)
 		{
 			MediaController.PreviousTrack();
-			return Task.CompletedTask;
 		}
 	}
 }

@@ -5,7 +5,10 @@ namespace HomeMediaRemote.Host.Commands.Mic
 {
 	internal class MicOnCommand : ICommand<MicOnCommand.Request>
 	{
-		private record Request();
+		public record Request
+		{
+			public static readonly Request Empty = new();
+		}
 
 		private readonly AudioInputController _audioInputController;
 		private readonly IconStatusManager _iconStatusManager;
@@ -18,12 +21,10 @@ namespace HomeMediaRemote.Host.Commands.Mic
 			this._iconStatusManager = iconStatusManager;
 		}
 
-		Task ICommand<Request>.ExecuteAsync(Request request, CancellationToken cancellationToken)
+		void ICommand<Request>.Execute(Request request)
 		{
 			_audioInputController.SetMute(false);
 			_iconStatusManager.HideMicOffStatus();
-
-			return Task.CompletedTask;
 		}
 	}
 }

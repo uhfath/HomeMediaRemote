@@ -2,6 +2,6 @@
 {
 	internal interface ICommand<in TRequest>
 	{
-		public Task ExecuteAsync(TRequest request, CancellationToken cancellationToken = default);
+		public void Execute(TRequest request);
 	}
 }
