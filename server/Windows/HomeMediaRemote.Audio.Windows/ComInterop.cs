@@ -79,11 +79,11 @@ namespace HomeMediaRemote.Audio.Windows
 	{
 		// 0
 		[PreserveSig]
-		int RegisterControlChangeNotify(nint pNotify);
+		int RegisterControlChangeNotify(IAudioEndpointVolumeCallback pNotify);
 
 		// 1
 		[PreserveSig]
-		int UnregisterControlChangeNotify(nint pNotify);
+		int UnregisterControlChangeNotify(IAudioEndpointVolumeCallback pNotify);
 
 		// 2
 		[PreserveSig]
@@ -154,6 +154,38 @@ namespace HomeMediaRemote.Audio.Windows
 	}
 
 	// ──────────────────────────────────────────────────────────
+	//  AUDIO_VOLUME_NOTIFICATION_DATA
+	//  Структура, передаваемая в OnNotify
+	// ──────────────────────────────────────────────────────────
+
+	[StructLayout(LayoutKind.Sequential)]
+	internal struct AUDIO_VOLUME_NOTIFICATION_DATA
+	{
+		public Guid guidEventContext;
+		[MarshalAs(UnmanagedType.Bool)]
+		public bool bMuted;
+		public float fMasterVolume;
+		public uint nChannels;
+		// afChannelVolumes — массив переменной длины (C-style flexible array).
+		// Объявляем только первый элемент; остальные при необходимости
+		// можно прочитать через смещение от указателя.
+		public float afChannelVolumes;
+	}
+
+	// ──────────────────────────────────────────────────────────
+	//  IAudioEndpointVolumeCallback
+	// ──────────────────────────────────────────────────────────
+
+	[ComVisible(true)]
+	[Guid("657804FA-D6AD-4496-8A60-352752AF4F89")]
+	[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+	internal interface IAudioEndpointVolumeCallback
+	{
+		[PreserveSig]
+		int OnNotify(nint pNotifyData);   // указатель на AUDIO_VOLUME_NOTIFICATION_DATA
+	}
+
+	// ──────────────────────────────────────────────────────────
 	//  Фабричный хелпер: получает IAudioEndpointVolume
 	//  для нужного типа устройства
 	// ──────────────────────────────────────────────────────────
@@ -171,7 +203,6 @@ namespace HomeMediaRemote.Audio.Windows
 		/// <exception cref="COMException">
 		/// 0x80070490 (E_NOTFOUND) — устройство данного типа отсутствует.
 		/// </exception>
-		[SupportedOSPlatform("windows")]
 		internal static IAudioEndpointVolume Create(EDataFlow flow)
 		{
 			var enumerator = (IMMDeviceEnumerator)new MMDeviceEnumeratorCom();

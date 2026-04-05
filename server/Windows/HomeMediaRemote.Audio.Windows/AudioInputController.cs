@@ -10,11 +10,63 @@ namespace HomeMediaRemote.Audio.Windows
 	{
 		private const float VolumeStep = 0.05f;
 
+		/// <summary>
+		/// GUID, который мы передаём во все «свои» вызовы.
+		/// Позволяет отличить собственные изменения от внешних.
+		/// </summary>
+		private static readonly Guid OwnEventContext =
+			new("20ba72b0-4b5d-4b9e-aca9-8dd89758626c"); // замените на свой при желании
+
 		private IAudioEndpointVolume _ep;
+
+		// ── Callback state ──────────────────────────────────
+		private AudioVolumeCallback? _callback;
 
 		public AudioInputController()
 		{
 			_ep = EndpointVolumeFactory.Create(EDataFlow.eCapture);
+		}
+
+		// ── Подписка на изменения ───────────────────────────
+
+		/// <summary>
+		/// Подписаться на уведомления об изменении громкости / mute.
+		/// Коллбэк будет вызван при ЛЮБОМ изменении (включая собственные),
+		/// но <see cref="AudioVolumeChangedEventArgs.IsExternalChange"/>
+		/// позволяет отличить внешние изменения.
+		/// </summary>
+		/// <param name="handler">Делегат-обработчик.</param>
+		/// <exception cref="InvalidOperationException">Уже подписаны.</exception>
+		public void Subscribe(Action<AudioVolumeChangedEventArgs> handler)
+		{
+			ThrowIfDisposed();
+			if (_callback != null)
+				throw new InvalidOperationException("Уже подписаны. Сначала вызовите Unsubscribe().");
+
+			_callback = new AudioVolumeCallback(OwnEventContext, handler);
+
+			int hr = _ep.RegisterControlChangeNotify(_callback);    // CLR создаёт CCW автоматически
+			if (hr < 0)
+			{
+				_callback = null;
+				Marshal.ThrowExceptionForHR(hr);
+			}
+		}
+
+		/// <summary>Отписаться от уведомлений.</summary>
+		public void Unsubscribe()
+		{
+			ThrowIfDisposed();
+			UnsubscribeInternal();
+		}
+
+		private void UnsubscribeInternal()
+		{
+			if (_callback != null)
+			{
+				_ep.UnregisterControlChangeNotify(_callback);
+				_callback = null;
+			}
 		}
 
 		// ── Mute / Unmute ───────────────────────────────────
@@ -34,7 +86,7 @@ namespace HomeMediaRemote.Audio.Windows
 		public void SetMute(bool mute)
 		{
 			ThrowIfDisposed();
-			var ctx = Guid.Empty;
+			var ctx = OwnEventContext;                       // ← наш GUID
 			Marshal.ThrowExceptionForHR(_ep.SetMute(mute, ref ctx));
 		}
 
@@ -58,7 +110,7 @@ namespace HomeMediaRemote.Audio.Windows
 			if (level < 0f || level > 1f)
 				throw new ArgumentOutOfRangeException(nameof(level),
 					"Допустимый диапазон: 0.0 … 1.0");
-			var ctx = Guid.Empty;
+			var ctx = OwnEventContext;                       // ← наш GUID
 			Marshal.ThrowExceptionForHR(_ep.SetMasterVolumeLevelScalar(level, ref ctx));
 		}
 
@@ -88,6 +140,7 @@ namespace HomeMediaRemote.Audio.Windows
 		{
 			if (!_disposed && _ep != null)
 			{
+				UnsubscribeInternal();           // ← сначала отписываемся
 				Marshal.ReleaseComObject(_ep);
 				_ep = null!;
 				_disposed = true;

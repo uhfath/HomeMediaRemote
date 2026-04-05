@@ -4,6 +4,7 @@ using HomeMediaRemote.Host.Commands.Media;
 using HomeMediaRemote.Host.Commands.Mic;
 using HomeMediaRemote.Host.Commands.Pc;
 using HomeMediaRemote.Host.Commands.Sound;
+using HomeMediaRemote.Host.States;
 using HomeMediaRemote.Media.Windows;
 using HomeMediaRemote.Pc.Windows;
 using HomeMediaRemote.Status.Windows;
@@ -67,6 +68,8 @@ namespace HomeMediaRemote.Host
             builder.Services
                 .AddSingleton<CommandDispatcherCache>()
                 .AddScoped<CommandDispatcher>()
+                .AddHostedService<MicState>()
+                .AddHostedService<SoundState>()
             ;
 
             builder.Services
@@ -78,7 +81,7 @@ namespace HomeMediaRemote.Host
 
             foreach (var commandMap in CommandsMap)
             {
-                builder.Services.AddScoped(GetCommandInterfaceType(commandMap.Value), commandMap.Value);
+                builder.Services.AddTransient(GetCommandInterfaceType(commandMap.Value), commandMap.Value);
             }
 
             builder.Services.AddAuthorization();

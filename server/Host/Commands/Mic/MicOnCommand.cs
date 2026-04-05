@@ -11,20 +11,16 @@ namespace HomeMediaRemote.Host.Commands.Mic
 		}
 
 		private readonly AudioInputController _audioInputController;
-		private readonly IconStatusManager _iconStatusManager;
 
 		public MicOnCommand(
-			AudioInputController audioInputController,
-			IconStatusManager iconStatusManager)
+			AudioInputController audioInputController)
 		{
 			this._audioInputController = audioInputController;
-			this._iconStatusManager = iconStatusManager;
 		}
 
 		void ICommand<Request>.Execute(Request request)
 		{
 			_audioInputController.SetMute(false);
-			_iconStatusManager.HideMicOffStatus();
 		}
 	}
 }
