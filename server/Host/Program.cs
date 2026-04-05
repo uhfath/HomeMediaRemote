@@ -4,6 +4,9 @@ using HomeMediaRemote.Host.Commands.Media;
 using HomeMediaRemote.Host.Commands.Mic;
 using HomeMediaRemote.Host.Commands.Pc;
 using HomeMediaRemote.Host.Commands.Sound;
+using HomeMediaRemote.Media.Windows;
+using HomeMediaRemote.Pc.Windows;
+using HomeMediaRemote.Status.Windows;
 
 namespace HomeMediaRemote.Host
 {
@@ -57,7 +60,7 @@ namespace HomeMediaRemote.Host
             return requestType;
 		}
 
-        private static void Main(string[] args)
+		private static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -67,8 +70,10 @@ namespace HomeMediaRemote.Host
             ;
 
             builder.Services
-                .AddScoped<AudioInputController>()
-                .AddScoped<AudioOutputController>()
+                .AddMediaServices()
+                .AddPcServices()
+				.AddAudioServices()
+                .AddStatusServices()
             ;
 
             foreach (var commandMap in CommandsMap)

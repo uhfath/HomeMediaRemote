@@ -1,8 +1,7 @@
-﻿using HomeMediaRemote.Host.Commands;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Reflection;
 
-namespace HomeMediaRemote.Host
+namespace HomeMediaRemote.Host.Commands
 {
 	internal class CommandDispatcherCache
 	{
@@ -16,7 +15,7 @@ namespace HomeMediaRemote.Host
 			return new CommandEntry(commandType, executeMethod!);
 		}
 
-		public CommandEntry GetOrCreateCommand(string commandType, object request) =>
+		public CommandEntry GetCommand(string commandType, object request) =>
 			_commandTypes.GetOrAdd(commandType, _ => CreateCommandEntry(request));
 
 		public record CommandEntry(Type CommandType, MethodInfo CommandMethod);

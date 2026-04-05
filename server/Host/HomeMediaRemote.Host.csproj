@@ -10,6 +10,7 @@
     <ProjectReference Include="..\Windows\HomeMediaRemote.Audio.Windows\HomeMediaRemote.Audio.Windows.csproj" />
     <ProjectReference Include="..\Windows\HomeMediaRemote.Media.Windows\HomeMediaRemote.Media.Windows.csproj" />
     <ProjectReference Include="..\Windows\HomeMediaRemote.Pc.Windows\HomeMediaRemote.Pc.Windows.csproj" />
+    <ProjectReference Include="..\Windows\HomeMediaRemote.Status.Windows\HomeMediaRemote.Status.Windows.csproj" />
   </ItemGroup>
 
 </Project>

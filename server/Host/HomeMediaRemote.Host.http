@@ -86,20 +86,6 @@ Content-Type: application/json
 }
 ###
 
-POST {{HomeMediaRemote.Host_HostAddress}}/screen/off
-Accept: application/json
-Content-Type: application/json
-{
-}
-###
-
-POST {{HomeMediaRemote.Host_HostAddress}}/screen/on
-Accept: application/json
-Content-Type: application/json
-{
-}
-###
-
 POST {{HomeMediaRemote.Host_HostAddress}}/sound/mute
 Accept: application/json
 Content-Type: application/json

@@ -11,6 +11,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HomeMediaRemote.Pc.Windows"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HomeMediaRemote.Media.Windows", "..\Windows\HomeMediaRemote.Media.Windows\HomeMediaRemote.Media.Windows.csproj", "{E9A75183-30F9-493A-BE9F-3F7893E662DF}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Windows", "Windows", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HomeMediaRemote.Status.Windows", "..\Windows\HomeMediaRemote.Status.Windows\HomeMediaRemote.Status.Windows.csproj", "{7A35D07C-5FB0-40D2-BD11-A289E3DE0AAC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,9 +37,19 @@ Global
 		{E9A75183-30F9-493A-BE9F-3F7893E662DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E9A75183-30F9-493A-BE9F-3F7893E662DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E9A75183-30F9-493A-BE9F-3F7893E662DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7A35D07C-5FB0-40D2-BD11-A289E3DE0AAC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A35D07C-5FB0-40D2-BD11-A289E3DE0AAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A35D07C-5FB0-40D2-BD11-A289E3DE0AAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A35D07C-5FB0-40D2-BD11-A289E3DE0AAC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{13F54A47-59C8-4E66-B874-E3D38E7ECD14} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{A2194DE3-AEEC-460F-8D44-DFA1AADAD9BF} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{E9A75183-30F9-493A-BE9F-3F7893E662DF} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{7A35D07C-5FB0-40D2-BD11-A289E3DE0AAC} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5E08AD81-BA53-409E-AE8C-28CF9DEDBB28}

@@ -1,4 +1,5 @@
 ﻿using HomeMediaRemote.Audio.Windows;
+using HomeMediaRemote.Status.Windows;
 
 namespace HomeMediaRemote.Host.Commands.Sound
 {
@@ -7,16 +8,20 @@ namespace HomeMediaRemote.Host.Commands.Sound
 		private record Request();
 
 		private readonly AudioOutputController _audioOutputController;
+		private readonly IconStatusManager _iconStatusManager;
 
 		public SoundMuteCommand(
-			AudioOutputController audioOutputController)
+			AudioOutputController audioOutputController,
+			IconStatusManager iconStatusManager)
 		{
 			this._audioOutputController = audioOutputController;
+			this._iconStatusManager = iconStatusManager;
 		}
 
 		Task ICommand<Request>.ExecuteAsync(Request request, CancellationToken cancellationToken)
 		{
 			_audioOutputController.SetMute(true);
+			_iconStatusManager.ShowNoSoundStatus();
 			return Task.CompletedTask;
 		}
 	}

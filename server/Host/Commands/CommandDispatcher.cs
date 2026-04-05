@@ -15,7 +15,7 @@
 
 		public async Task ExecuteAsync(string commandType, object request, CancellationToken cancellationToken = default)
 		{
-			var commandEntry = _commandDispatcherCache.GetOrCreateCommand(commandType, request);
+			var commandEntry = _commandDispatcherCache.GetCommand(commandType, request);
 			var command = _serviceProvider.GetRequiredService(commandEntry.CommandType);
 			var result = commandEntry.CommandMethod.Invoke(command, [request, cancellationToken]);
 
