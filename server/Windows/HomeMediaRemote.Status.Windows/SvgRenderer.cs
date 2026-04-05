@@ -65,8 +65,10 @@ namespace HomeMediaRemote.Status.Windows
 
 			using var image = surface.Snapshot();
 			using var data = image.Encode(SKEncodedImageFormat.Png, 100);
-			return new Bitmap(data.AsStream());
-			//return new Bitmap(new MemoryStream(data.ToArray()));
+			using var stream = data.AsStream();
+			using var tempBitmap = new Bitmap(stream);
+
+			return new Bitmap(tempBitmap); // глубокая копия, стрим можно освобождать
 		}
 	}
 }
