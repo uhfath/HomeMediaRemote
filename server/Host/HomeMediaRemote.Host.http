@@ -58,6 +58,13 @@ Content-Type: application/json
 }
 ###
 
+POST {{HomeMediaRemote.Host_HostAddress}}/mic/trigger
+Accept: application/json
+Content-Type: application/json
+{
+}
+###
+
 POST {{HomeMediaRemote.Host_HostAddress}}/pc/lock
 Accept: application/json
 Content-Type: application/json
@@ -87,6 +94,13 @@ Content-Type: application/json
 ###
 
 POST {{HomeMediaRemote.Host_HostAddress}}/sound/mute
+Accept: application/json
+Content-Type: application/json
+{
+}
+###
+
+POST {{HomeMediaRemote.Host_HostAddress}}/sound/trigger
 Accept: application/json
 Content-Type: application/json
 {

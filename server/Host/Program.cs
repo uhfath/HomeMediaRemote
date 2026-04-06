@@ -19,7 +19,7 @@ namespace HomeMediaRemote.Host
 
 		private const int ATTACH_PARENT_PROCESS = -1;
 
-        private static bool ProcessCommandLine(string[] args)
+        private static async Task<bool> ProcessCommandLineAsync(string[] args, CancellationToken cancellationToken)
         {
 			var argsDict = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
 
@@ -44,7 +44,7 @@ namespace HomeMediaRemote.Host
             {
 				Console.WriteLine();
 				Console.WriteLine("Parameter: 'command'");
-				var commands = string.Join(", ", FileBackendService.FileNames.Select(c => $"'{c}'"));
+				var commands = string.Join(", ", PipeBackendService.CommandNames.Select(c => $"'{c}'"));
 				Console.WriteLine("Commands: {0}", commands);
 
 				return true;
@@ -54,7 +54,7 @@ namespace HomeMediaRemote.Host
             {
 				if (command is not null)
 				{
-					if (!FileBackendService.CreateFileCommand(command))
+					if (!await PipeBackendService.ExecuteCommandAsync(command, cancellationToken))
 					{
 						Console.Error.WriteLine("Unknown command.");
 					}
@@ -70,7 +70,7 @@ namespace HomeMediaRemote.Host
 			return false;
 		}
 
-		private static void Main(string[] args)
+		private static async Task Main(string[] args)
         {
 			var isDevelopment = string.Equals(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"), "Development", StringComparison.OrdinalIgnoreCase);
 			if (isDevelopment && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -82,7 +82,7 @@ namespace HomeMediaRemote.Host
 				}
 			}
 
-			if (ProcessCommandLine(args))
+			if (await ProcessCommandLineAsync(args, default))
 			{
 				return;
 			}
@@ -103,7 +103,7 @@ namespace HomeMediaRemote.Host
             ;
 
 			HttpBackendService.AddHttpBackendServices(builder.Services);
-			FileBackendService.AddFileBackendServices(builder.Services);
+			PipeBackendService.AddPipeBackendServices(builder.Services);
 
             builder.Services.AddAuthorization();
 
@@ -112,7 +112,7 @@ namespace HomeMediaRemote.Host
 
 			HttpBackendService.UseHttpBackendServices(app);
 
-			app.Run();
+			await app.RunAsync();
         }
     }
 }

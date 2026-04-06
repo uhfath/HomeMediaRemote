@@ -19,6 +19,7 @@ namespace HomeMediaRemote.Host.Services
 			{ "/mic/on", typeof(MicOnCommand) },
 			{ "/mic/sens_down", typeof(MicSensDownCommand) },
 			{ "/mic/sens_up", typeof(MicSensUpCommand) },
+			{ "/mic/trigger", typeof(MicTriggerCommand) },
 
 			{ "/pc/lock", typeof(PcLockCommand) },
 			{ "/pc/restart", typeof(PcRestartCommand) },
@@ -26,6 +27,7 @@ namespace HomeMediaRemote.Host.Services
 			{ "/pc/sleep", typeof(PcSleepCommand) },
 
 			{ "/sound/mute", typeof(SoundMuteCommand) },
+			{ "/sound/trigger", typeof(SoundTriggerCommand) },
 			{ "/sound/unmute", typeof(SoundUnMuteCommand) },
 			{ "/sound/vol_down", typeof(SoundVolDownCommand) },
 			{ "/sound/vol_up", typeof(SoundVolUpCommand) },
