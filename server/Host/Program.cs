@@ -90,8 +90,7 @@ namespace HomeMediaRemote.Host
 			var builder = WebApplication.CreateBuilder(args);
 
 			builder.Services
-                .AddSingleton<CommandDispatcherCache>()
-                .AddScoped<CommandDispatcher>()
+                .AddSingleton<CommandDispatcher>()
                 .AddHostedService<MicState>()
                 .AddHostedService<SoundState>()
             ;

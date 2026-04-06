@@ -3,6 +3,9 @@ using HomeMediaRemote.Host.Commands.Media;
 using HomeMediaRemote.Host.Commands.Mic;
 using HomeMediaRemote.Host.Commands.Pc;
 using HomeMediaRemote.Host.Commands.Sound;
+using Microsoft.AspNetCore.Http;
+using System.Collections.Concurrent;
+using System.Threading;
 
 namespace HomeMediaRemote.Host.Services
 {
@@ -33,14 +36,78 @@ namespace HomeMediaRemote.Host.Services
 
 		public static IEnumerable<string> FileNames = CommandLineCommandMaps.Keys;
 
+		private readonly ConcurrentDictionary<string, Task> _processingTasks = new(StringComparer.OrdinalIgnoreCase);
+		private readonly CommandDispatcher _commandDispatcher;
+		private readonly ILogger<FileBackendService> _logger;
+		private FileSystemWatcher _fileSystemWatcher = null!;
+
+		private Task ExecuteCommand(string commandName)
+		{
+			return Task.Run(() =>
+			{
+				try
+				{
+					var commandMap = CommandLineCommandMaps[commandName];
+					var requestType = CommandDispatcher.GetCommandRequestType(commandMap);
+					var request = Activator.CreateInstance(requestType);
+					_commandDispatcher.Execute(commandName, request!);
+					File.Delete(commandName);
+				}
+				catch (Exception ex)
+				{
+					_logger.LogError(ex, "File command processing error.");
+				}
+				finally
+				{
+					_processingTasks.TryRemove(commandName, out _);
+				}
+			});
+		}
+
+		private void OnFileCreatedEvent(object sender, FileSystemEventArgs eventArgs)
+		{
+			if (eventArgs.Name is null || !CommandLineCommandMaps.ContainsKey(eventArgs.Name))
+			{
+				return;
+			}
+
+			_processingTasks.AddOrUpdate(eventArgs.Name, ExecuteCommand, (_, c) => c);
+		}
+
+		public FileBackendService(
+			CommandDispatcher commandDispatcher,
+			ILogger<FileBackendService> logger)
+		{
+			this._commandDispatcher = commandDispatcher;
+			this._logger = logger;
+		}
+
 		public Task StartAsync(CancellationToken cancellationToken)
 		{
+			_fileSystemWatcher = new FileSystemWatcher(Directory.GetCurrentDirectory())
+			{
+				Filter = "*",
+				NotifyFilter = NotifyFilters.FileName,
+				EnableRaisingEvents = true,
+			};
+
+			_fileSystemWatcher.Created += OnFileCreatedEvent;
+
 			return Task.CompletedTask;
 		}
 
-		public Task StopAsync(CancellationToken cancellationToken)
+		public async Task StopAsync(CancellationToken cancellationToken)
 		{
-			return Task.CompletedTask;
+			foreach (var task in _processingTasks)
+			{
+				await task.Value;
+			}
+
+			_processingTasks.Clear();
+
+			_fileSystemWatcher.Created -= OnFileCreatedEvent;
+			_fileSystemWatcher.EnableRaisingEvents = false;
+			_fileSystemWatcher.Dispose();
 		}
 
 		public static bool CreateFileCommand(string command)
