@@ -7,6 +7,11 @@ namespace HomeMediaRemote.Status.Windows
 		public static IServiceCollection AddStatusServices(this IServiceCollection services)
 		{
 			services
+				.AddOptions<ScreenOverlayStateOptions>()
+				.BindConfiguration("ScreenOverlayState")
+			;
+
+			services
 				.AddSingleton<ScreenOverlayManager>()
 				.AddSingleton<IconManager>()
 				.AddSingleton<FormManager>()

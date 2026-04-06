@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using Microsoft.Extensions.Options;
+using System.Collections.Concurrent;
 
 namespace HomeMediaRemote.Status.Windows
 {
@@ -46,11 +47,17 @@ namespace HomeMediaRemote.Status.Windows
 		}
 
 		public ScreenOverlayManager(
+			IOptions<ScreenOverlayStateOptions> screenOverlayStateOptions,
 			FormManager formManager)
 		{
 			this._formManager = formManager;
 
-			_screenGrids.AddRange(Screen.AllScreens
+			var screens = screenOverlayStateOptions.Value.ShowOverlaysOnAllScreens
+				? Screen.AllScreens
+				: [Screen.PrimaryScreen!]
+			;
+
+			_screenGrids.AddRange(screens
 				.Select(s => new GridLayout(s.Bounds, new Point(OverlaySpacing, OverlaySpacing)))
 			);
 		}
