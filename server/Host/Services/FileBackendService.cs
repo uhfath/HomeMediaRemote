@@ -11,6 +11,9 @@ namespace HomeMediaRemote.Host.Services
 {
 	internal class FileBackendService : IHostedService
 	{
+		private const int CleanupRetries = 5;
+		private static readonly TimeSpan CleanupInterval = TimeSpan.FromSeconds(1);
+
 		private static readonly IReadOnlyDictionary<string, Type> CommandLineCommandMaps = new Dictionary<string, Type>(StringComparer.OrdinalIgnoreCase)
 		{
 			{ "media-next", typeof(MediaNextCommand) },
@@ -41,9 +44,24 @@ namespace HomeMediaRemote.Host.Services
 		private readonly ILogger<FileBackendService> _logger;
 		private FileSystemWatcher _fileSystemWatcher = null!;
 
+		private async Task CleanupCommand(string commandName)
+		{
+			for (var i = 0; i < CleanupRetries; i++)
+			{
+				try
+				{
+					File.Delete(commandName);
+				}
+				catch (IOException)
+				{
+					await Task.Delay(CleanupInterval);
+				}
+			}
+		}
+
 		private Task ExecuteCommand(string commandName)
 		{
-			return Task.Run(() =>
+			return Task.Run(async () =>
 			{
 				try
 				{
@@ -51,7 +69,7 @@ namespace HomeMediaRemote.Host.Services
 					var requestType = CommandDispatcher.GetCommandRequestType(commandMap);
 					var request = Activator.CreateInstance(requestType);
 					_commandDispatcher.Execute(commandName, request!);
-					File.Delete(commandName);
+					await CleanupCommand(commandName);
 				}
 				catch (Exception ex)
 				{
