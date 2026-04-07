@@ -277,7 +277,7 @@ namespace HomeMediaRemote.Audio.Windows
 		/// <summary>Использует переданный enumerator без освобождения.</summary>
 		internal static IAudioEndpointVolume Create(EDataFlow flow, IMMDeviceEnumerator enumerator)
 		{
-			Marshal.ThrowExceptionForHR(enumerator.GetDefaultAudioEndpoint(flow, ERole.eMultimedia, out var device));
+			Marshal.ThrowExceptionForHR(enumerator.GetDefaultAudioEndpoint(flow, AudioController.CurrentRole, out var device));
 
 			try
 			{

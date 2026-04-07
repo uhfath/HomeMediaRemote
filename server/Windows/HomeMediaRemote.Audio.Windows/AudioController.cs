@@ -12,7 +12,7 @@ namespace HomeMediaRemote.Audio.Windows
 	/// </summary>
 	public abstract class AudioController : IDisposable
 	{
-		private const ERole CurrentRole = ERole.eMultimedia;
+		internal const ERole CurrentRole = ERole.eMultimedia;
 
 		private const float VolumeStep = 0.05f;
 
@@ -95,7 +95,7 @@ namespace HomeMediaRemote.Audio.Windows
 
 			try
 			{
-				newEp = EndpointVolumeFactory.Create(EDataFlow.eRender, _enumerator);
+				newEp = EndpointVolumeFactory.Create(_eDataFlow, _enumerator);
 			}
 			catch (COMException ex)
 			{
@@ -527,8 +527,6 @@ namespace HomeMediaRemote.Audio.Windows
 			{
 				if (flow == _owner._eDataFlow && role == CurrentRole)
 				{
-					_owner._logger.LogInformation("Default device changed: {DeviceId}", defaultDeviceId);
-
 					// ══════════════════════════════════════════════════
 					//  НЕЛЬЗЯ вызывать аудио-API внутри этого коллбэка.
 					//  Откладываем всю работу на пул потоков.
