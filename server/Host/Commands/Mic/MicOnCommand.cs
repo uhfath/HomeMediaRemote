@@ -20,7 +20,7 @@ namespace HomeMediaRemote.Host.Commands.Mic
 
 		void ICommand<Request>.Execute(Request request)
 		{
-			_audioInputController.SetMute(false);
+			_audioInputController.Mute = false;
 		}
 	}
 }

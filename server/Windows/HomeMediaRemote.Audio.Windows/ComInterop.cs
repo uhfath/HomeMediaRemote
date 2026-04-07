@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
 
 namespace HomeMediaRemote.Audio.Windows
 {
@@ -8,7 +7,7 @@ namespace HomeMediaRemote.Audio.Windows
 	//  Перечисления
 	// ──────────────────────────────────────────────────────────
 
-	internal enum EDataFlow
+	public enum EDataFlow
 	{
 		eRender = 0,   // Устройство вывода (колонки, наушники)
 		eCapture = 1,   // Устройство ввода  (микрофон)
@@ -23,6 +22,17 @@ namespace HomeMediaRemote.Audio.Windows
 	}
 
 	// ──────────────────────────────────────────────────────────
+	//  PROPERTYKEY (для IMMNotificationClient.OnPropertyValueChanged)
+	// ──────────────────────────────────────────────────────────
+
+	[StructLayout(LayoutKind.Sequential)]
+	internal struct PROPERTYKEY
+	{
+		public Guid fmtid;
+		public int pid;
+	}
+
+	// ──────────────────────────────────────────────────────────
 	//  COM-класс MMDeviceEnumerator
 	// ──────────────────────────────────────────────────────────
 
@@ -31,24 +41,82 @@ namespace HomeMediaRemote.Audio.Windows
 	internal class MMDeviceEnumeratorCom { }
 
 	// ──────────────────────────────────────────────────────────
-	//  IMMDeviceEnumerator
+	//  IMMDeviceEnumerator  (полный vtable)
 	// ──────────────────────────────────────────────────────────
 
 	[Guid("A95664D2-9614-4F35-A746-DE8DB63617E6")]
 	[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
 	internal interface IMMDeviceEnumerator
 	{
+		// 0
 		[PreserveSig]
 		int EnumAudioEndpoints(
 			EDataFlow dataFlow,
 			int dwStateMask,
 			out nint ppDevices);
 
+		// 1
 		[PreserveSig]
 		int GetDefaultAudioEndpoint(
 			EDataFlow dataFlow,
 			ERole role,
 			out IMMDevice ppEndpoint);
+
+		// 2
+		[PreserveSig]
+		int GetDevice(
+			[MarshalAs(UnmanagedType.LPWStr)] string pwstrId,
+			out IMMDevice ppDevice);
+
+		// 3
+		[PreserveSig]
+		int RegisterEndpointNotificationCallback(
+			IMMNotificationClient pClient);
+
+		// 4
+		[PreserveSig]
+		int UnregisterEndpointNotificationCallback(
+			IMMNotificationClient pClient);
+	}
+
+	// ──────────────────────────────────────────────────────────
+	//  IMMNotificationClient
+	//  Порядок методов строго соответствует COM vtable.
+	// ──────────────────────────────────────────────────────────
+
+	[ComVisible(true)]
+	[Guid("7991EEC9-7E89-4D85-8390-6C703CEC60C0")]
+	[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+	internal interface IMMNotificationClient
+	{
+		// 0
+		[PreserveSig]
+		int OnDeviceStateChanged(
+			[MarshalAs(UnmanagedType.LPWStr)] string deviceId,
+			int newState);
+
+		// 1
+		[PreserveSig]
+		int OnDeviceAdded(
+			[MarshalAs(UnmanagedType.LPWStr)] string deviceId);
+
+		// 2
+		[PreserveSig]
+		int OnDeviceRemoved(
+			[MarshalAs(UnmanagedType.LPWStr)] string deviceId);
+
+		// 3
+		[PreserveSig]
+		int OnDefaultDeviceChanged(
+			EDataFlow flow,
+			ERole role,
+			[MarshalAs(UnmanagedType.LPWStr)] string? defaultDeviceId);
+
+		// 4
+		[PreserveSig]
+		int OnPropertyValueChanged(
+			[MarshalAs(UnmanagedType.LPWStr)] string deviceId,
+			PROPERTYKEY key);
 	}
 
 	// ──────────────────────────────────────────────────────────
@@ -70,7 +138,6 @@ namespace HomeMediaRemote.Audio.Windows
 	// ──────────────────────────────────────────────────────────
 	//  IAudioEndpointVolume
 	//  Порядок методов СТРОГО соответствует vtable COM-интерфейса.
-	//  Переставлять/удалять методы нельзя!
 	// ──────────────────────────────────────────────────────────
 
 	[Guid("5CDF2C82-841E-4546-9722-0CF74078229A")]
@@ -155,7 +222,6 @@ namespace HomeMediaRemote.Audio.Windows
 
 	// ──────────────────────────────────────────────────────────
 	//  AUDIO_VOLUME_NOTIFICATION_DATA
-	//  Структура, передаваемая в OnNotify
 	// ──────────────────────────────────────────────────────────
 
 	[StructLayout(LayoutKind.Sequential)]
@@ -166,9 +232,6 @@ namespace HomeMediaRemote.Audio.Windows
 		public bool bMuted;
 		public float fMasterVolume;
 		public uint nChannels;
-		// afChannelVolumes — массив переменной длины (C-style flexible array).
-		// Объявляем только первый элемент; остальные при необходимости
-		// можно прочитать через смещение от указателя.
 		public float afChannelVolumes;
 	}
 
@@ -182,7 +245,7 @@ namespace HomeMediaRemote.Audio.Windows
 	internal interface IAudioEndpointVolumeCallback
 	{
 		[PreserveSig]
-		int OnNotify(nint pNotifyData);   // указатель на AUDIO_VOLUME_NOTIFICATION_DATA
+		int OnNotify(nint pNotifyData);
 	}
 
 	// ──────────────────────────────────────────────────────────
@@ -193,38 +256,38 @@ namespace HomeMediaRemote.Audio.Windows
 	internal static class EndpointVolumeFactory
 	{
 		private static readonly Guid IID_IAudioEndpointVolume =
-			new Guid("5CDF2C82-841E-4546-9722-0CF74078229A");
+			new("5CDF2C82-841E-4546-9722-0CF74078229A");
 
 		private const int CLSCTX_ALL = 0x17;   // INPROC_SERVER | INPROC_HANDLER | LOCAL_SERVER | REMOTE_SERVER
 
-		/// <summary>
-		/// Возвращает COM-объект IAudioEndpointVolume для устройства по умолчанию.
-		/// </summary>
-		/// <exception cref="COMException">
-		/// 0x80070490 (E_NOTFOUND) — устройство данного типа отсутствует.
-		/// </exception>
+		/// <summary>Создаёт собственный enumerator, использует и освобождает его.</summary>
 		internal static IAudioEndpointVolume Create(EDataFlow flow)
 		{
 			var enumerator = (IMMDeviceEnumerator)new MMDeviceEnumeratorCom();
 			try
 			{
-				Marshal.ThrowExceptionForHR(
-					enumerator.GetDefaultAudioEndpoint(flow, ERole.eMultimedia, out var device));
-				try
-				{
-					var iid = IID_IAudioEndpointVolume;
-					Marshal.ThrowExceptionForHR(
-						device.Activate(ref iid, CLSCTX_ALL, nint.Zero, out var activated));
-					return (IAudioEndpointVolume)activated;
-				}
-				finally
-				{
-					Marshal.ReleaseComObject(device);
-				}
+				return Create(flow, enumerator);
 			}
 			finally
 			{
 				Marshal.ReleaseComObject(enumerator);
+			}
+		}
+
+		/// <summary>Использует переданный enumerator без освобождения.</summary>
+		internal static IAudioEndpointVolume Create(EDataFlow flow, IMMDeviceEnumerator enumerator)
+		{
+			Marshal.ThrowExceptionForHR(enumerator.GetDefaultAudioEndpoint(flow, ERole.eMultimedia, out var device));
+
+			try
+			{
+				var iid = IID_IAudioEndpointVolume;
+				Marshal.ThrowExceptionForHR(device.Activate(ref iid, CLSCTX_ALL, nint.Zero, out var activated));
+				return (IAudioEndpointVolume)activated;
+			}
+			finally
+			{
+				Marshal.ReleaseComObject(device);
 			}
 		}
 	}
